@@ -16,9 +16,29 @@ add_format_target(format-all
   EXCLUDES "external"
 )
 
-add_executable(astprinter${EXE_SUFFIX} src/main.cpp)
+set(printer_sources
+  src/printer/NodeFinder.cpp
+)
 
-target_link_libraries(astprinter${EXE_SUFFIX} ${CLANG_LIBS} ${libedit_LIBRARIES} -lLLVMLineEditor -lLLVMSupport  -lLLVMLineEditor  -lLLVMMCParser  -lLLVMBitReader -lLLVMProfileData  -lLLVMOption -lLLVMCore -lLLVMMC -lLLVMSupport -lLLVMDemangle ${LLVM_SYSTEM_LIBS})
+add_library(astprint
+	${printer_sources}
+)
+
+add_executable(astprinter${EXE_SUFFIX} 
+  src/main.cpp
+)
+
+target_link_libraries(astprinter${EXE_SUFFIX} 
+  astprint
+  ${CLANG_LIBS}
+  -lLLVMLineEditor -lLLVMSupport
+  -lLLVMLineEditor -lLLVMMCParser 
+  -lLLVMBitReader -lLLVMProfileData 
+  -lLLVMOption -lLLVMCore 
+  -lLLVMMC -lLLVMSupport 
+  -lLLVMDemangle 
+  ${LLVM_SYSTEM_LIBS} 
+)
 
 add_custom_target(executable
   COMMENT "Target to compile astprinter executable"
