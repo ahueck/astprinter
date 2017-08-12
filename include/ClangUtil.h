@@ -38,6 +38,7 @@ inline std::string node2str(const clang::ASTContext& ac,
   node->print(s, ac.getPrintingPolicy());
   return s.str();
 }
+
 inline clang::SourceLocation getLocation(const clang::ASTUnit* u, unsigned line,
     unsigned column) {
   if (line == 0 || column == 0) {

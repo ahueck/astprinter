@@ -10,28 +10,36 @@
 
 namespace astprinter {
 
+NodeFinder::NodeFinder(const ASTContext& Context) :
+    visitor(Context) {
+
+}
+
+NodeFinder::NodeFinder(const ASTContext& Context, const SourceLocation Point,
+    const SourceLocation Point2) :
+    visitor(Context) {
+
+}
+
+void NodeFinder::find(clang::TranslationUnitDecl* tu_decl) {
+  if (visitor.start_loc.isInvalid()) {
+    return;
+  }
+  visitor.TraverseTranslationUnitDecl(tu_decl);
+}
+
+void NodeFinder::setLocation(const SourceLocation& start,
+    const SourceLocation& end) {
+  visitor.start_loc = start;
+  if (end.isValid()) {
+    visitor.end_loc = end;
+  }
+}
+
+namespace detail {
+
 NodeFindingASTVisitor::NodeFindingASTVisitor(const ASTContext& Context) :
     ctx(Context) {
-}
-
-NodeFindingASTVisitor::NodeFindingASTVisitor(const ASTContext& Context,
-    const SourceLocation Point, const SourceLocation Point2) :
-    start_loc(Point), end_loc(Point2), ctx(Context) {
-}
-
-void NodeFindingASTVisitor::setLocation(const SourceLocation& start,
-    const SourceLocation& end) {
-  this->start_loc = start;
-  if (end.isValid()) {
-    this->end_loc = end;
-  }
-}
-
-bool NodeFindingASTVisitor::TraverseDecl(Decl *D) {
-  if (start_loc.isInvalid()) {
-    return false;
-  }
-  return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseDecl(D);
 }
 
 bool NodeFindingASTVisitor::VisitDecl(Decl* decl) {
@@ -100,6 +108,8 @@ bool NodeFindingASTVisitor::isPointWithin(const SourceLocation Start,
   return start_loc == Start || start_loc == End
       || (ctx.getSourceManager().isBeforeInTranslationUnit(Start, start_loc)
           && ctx.getSourceManager().isBeforeInTranslationUnit(start_loc, End));
+}
+
 }
 
 } /* namespace astprinter */

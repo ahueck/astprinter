@@ -31,7 +31,7 @@ int main(int argc, const char **argv) {
   tool.buildASTs(av);
   ASTUnit* u = av[0].get();
 
-  NodeFindingASTVisitor visitor(u->getASTContext());
+  NodeFinder visitor(u->getASTContext());
   llvm::LineEditor le("ast-printer");
   while (llvm::Optional<std::string> line = le.readLine()) {
     if (*line == "q" || *line == "quit") {
@@ -52,7 +52,7 @@ int main(int argc, const char **argv) {
     const auto end = getLocation(u, locs[2], locs[3]);
 
     visitor.setLocation(start, end);
-    visitor.TraverseDecl(u->getASTContext().getTranslationUnitDecl());
+    visitor.find(u->getASTContext().getTranslationUnitDecl());
 
     llvm::outs().flush();
   }
