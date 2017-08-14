@@ -44,9 +44,12 @@ private:
   SourceLocation end_loc;
   const ASTContext& ctx;
   bool found { false };
+  bool decl_printer_mode { false };
 
 public:
   explicit NodeFindingASTVisitor(const ASTContext& Context);
+
+  bool shouldVisitImplicitCode() const;
 
   bool TraverseTranslationUnitDecl(TranslationUnitDecl* decl);
 

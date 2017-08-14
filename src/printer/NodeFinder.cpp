@@ -31,31 +31,30 @@ class printer {
     ;
   };
 
-  static void do_print(T node, std::true_type) {
+  static void do_print(T node, const ASTContext& ctx, std::true_type) {
     node->dumpColor();
   }
 
-  static void do_print(T node, std::false_type) {
+  static void do_print(T node, const ASTContext& ctx, std::false_type) {
     node->dump(llvm::outs());
   }
 
 public:
-  static void print(T node) {
-    printer<T>::do_print(node, hasColor::test(node));
+  static void print(T node, const ASTContext& ctx) {
+    llvm::outs() << "Code: " << node2str(ctx, node) << "\n";
+    printer<T>::do_print(node, ctx, hasColor::test(node));
+    auto& sm = ctx.getSourceManager();
+    const auto loc = locOf(ctx.getSourceManager(), node);
+    loc.getBegin().print(llvm::outs(), sm);
+    llvm::outs() << " -> ";
+    loc.getEnd().print(llvm::outs(), sm);
+    llvm::outs() << "\n";
   }
 };
 
 template<typename Node>
 inline void debug(const ASTContext& ctx, Node n) {
-  auto loc = locOf(ctx.getSourceManager(), n);
-  llvm::outs() << "Node: " << node2str(ctx, n) << "\n";
-  auto& sm = ctx.getSourceManager();
-  printer<Node>::print(n);
-  loc.getBegin().print(llvm::outs(), sm);
-  llvm::outs() << " -> ";
-  loc.getEnd().print(llvm::outs(), sm);
-  llvm::outs() << "\n";
-  llvm::outs() << "\n";
+  printer<Node>::print(n, ctx);
 }
 }
 
@@ -91,34 +90,49 @@ NodeFindingASTVisitor::NodeFindingASTVisitor(const ASTContext& Context) :
     ctx(Context) {
 }
 
+bool NodeFindingASTVisitor::shouldVisitImplicitCode() const {
+  return false;
+}
+
 const SourceManager& NodeFindingASTVisitor::sm() {
   return ctx.getSourceManager();
 }
 
 bool NodeFindingASTVisitor::TraverseTranslationUnitDecl(
     TranslationUnitDecl* decl) {
-  const auto result =
+  auto result =
       clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseTranslationUnitDecl(
           decl);
-  llvm::outs() << "Print whole decl? " << within(decl) << "\n";
-  if (!found && within(decl)) { // not found in subtree but cursor is in TU decl
-    llvm::outs() << "Print whole decl\n";
+
+  if (!found) { // not found in subtree
     // by: 1. traverse all decl etc. 2. filter nodes not within the main file.
+    llvm::outs() << "Print whole decl\n";
+    decl_printer_mode = true;
+    result = clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseTranslationUnitDecl(
+              decl);
+    decl_printer_mode = false;
   }
+
+  llvm::outs() << "-------------------------------------------\n";
   found = false;
   return result;
 }
 
 bool NodeFindingASTVisitor::VisitDecl(Decl* decl) {
-  if (isCandidate(decl)) {
+
+  if (!llvm::isa<TranslationUnitDecl>(*decl) && (decl_printer_mode || isCandidate(decl))) {
     debug(ctx, decl);
+    found = true;
+    return true;
   }
+
   return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::VisitDecl(decl);
 }
 
 bool NodeFindingASTVisitor::VisitExpr(Expr* expr) {
   if (isCandidate(expr)) {
     debug(ctx, expr);
+    found = true;
   }
   return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::VisitExpr(expr);
 }
