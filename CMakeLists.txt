@@ -31,6 +31,7 @@ add_executable(astprinter${EXE_SUFFIX}
 target_link_libraries(astprinter${EXE_SUFFIX} 
   astprint
   ${CLANG_LIBS}
+  ${libedit_LIBRARIES}
   -lLLVMLineEditor -lLLVMSupport
   -lLLVMLineEditor -lLLVMMCParser 
   -lLLVMBitReader -lLLVMProfileData 

@@ -12,6 +12,8 @@
 #include <clang/Lex/Lexer.h>
 #include <llvm/Support/raw_ostream.h>
 
+#include <string>
+
 template<typename T>
 inline clang::SourceRange locOf(const clang::SourceManager& sm, T node,
     unsigned int offset = 0) {
