@@ -43,6 +43,7 @@ inline std::string node2str(const clang::ASTContext& ac,
 
 inline clang::SourceLocation getLocation(const clang::ASTUnit* u, unsigned line,
     unsigned column) {
+  // if line > source file lines, loc to last source line is returned instead
   if (line == 0 || column == 0) {
     return {};
   }

@@ -26,6 +26,7 @@ namespace astprinter {
 
 using clang::ASTContext;
 using clang::SourceLocation;
+using clang::PresumedLoc;
 using clang::SourceRange;
 using clang::Decl;
 using clang::Expr;
@@ -40,16 +41,25 @@ namespace detail {
 class NodeFindingASTVisitor: public clang::RecursiveASTVisitor<
     NodeFindingASTVisitor> {
 
+//  using loc_pair_t = std::pair<SourceLocation, PresumedLoc>;
+  struct loc_pair_t {
+    SourceLocation location;
+    PresumedLoc presumed;
+  };
+
   friend NodeFinder;
 private:
-  SourceLocation start_loc;
-  SourceLocation end_loc;
   const ASTContext& ctx;
+  llvm::raw_ostream& os;
+  loc_pair_t start_loc {};
+  loc_pair_t end_loc {};
   bool found { false };
   bool print_whole { false };
+  bool stop_recursing { false };
 
 public:
-  explicit NodeFindingASTVisitor(const ASTContext& Context);
+  explicit NodeFindingASTVisitor(const ASTContext& Context,
+      llvm::raw_ostream& os = llvm::outs());
 
   bool shouldVisitImplicitCode() const;
 
@@ -70,23 +80,19 @@ private:
   }
 
   template<typename Node>
-  bool inMainFile(Node n) {
-    const auto& m = sm();
-    auto loc = locOf(m, n);
-    return m.isInMainFile(loc.getBegin());
+  bool isInMainFile(Node n) {
+    return sm().isInMainFile(n->getLocStart());
   }
 
   template<typename Node>
   bool isCandidate(Node n) {
     const auto& m = sm();
     auto loc = locOf(m, n);
-    return inMainFile(n) && within(loc);
+    return isInMainFile(n) && within(loc);
   }
 
-  bool within(const SourceRange ast_range);
+  bool within(const SourceRange& ast_range);
 
-  bool isPointWithin(const SourceLocation Start, const SourceLocation End,
-      SourceLocation Point);
 };
 
 } /* namespace detail */
@@ -96,10 +102,10 @@ private:
   detail::NodeFindingASTVisitor visitor;
 
 public:
-  explicit NodeFinder(const ASTContext& Context);
+  explicit NodeFinder(ASTContext& Context, llvm::raw_ostream& os = llvm::outs());
 
-  NodeFinder(const ASTContext& Context, const SourceLocation Point,
-      const SourceLocation Point2);
+  NodeFinder(ASTContext& Context, const SourceLocation Point,
+      const SourceLocation Point2, llvm::raw_ostream& os = llvm::outs());
 
   void find(TranslationUnitDecl* tu_decl, bool print_all_if_not_found = false);
 

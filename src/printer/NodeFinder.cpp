@@ -15,33 +15,56 @@ namespace astprinter {
 
 namespace {
 
-template<typename Node>
-inline void debug(const ASTContext& ctx, Node node) {
-  llvm::outs() << "Code: " << node2str(ctx, node) << "\n";
-  node->dumpColor();
+inline void print(const ASTContext& ctx, const Stmt* node,
+    llvm::raw_ostream& os) {
+  // non-const SM for printing in color to "os" needed
+  auto& sm = const_cast<SourceManager&>(ctx.getSourceManager());
+#ifdef NDEBUG
+  node->dump(os, sm);
+#else
+  os << "Code: " << node2str(ctx, node) << "\n";
+  node->dump(os, sm);
   auto& sm = ctx.getSourceManager();
   const auto loc = locOf(ctx.getSourceManager(), node);
-  loc.getBegin().print(llvm::outs(), sm);
-  llvm::outs() << " -> ";
-  loc.getEnd().print(llvm::outs(), sm);
-  llvm::outs() << "\n";
-}
-}
-
-NodeFinder::NodeFinder(const ASTContext& Context) :
-    visitor(Context) {
-
+  loc.getBegin().print(os, sm);
+  os << " -> ";
+  loc.getEnd().print(os, sm);
+  os << "\n";
+#endif
 }
 
-NodeFinder::NodeFinder(const ASTContext& Context, const SourceLocation Point,
-    const SourceLocation Point2) :
-    visitor(Context) {
+inline void print(const ASTContext& ctx, const Decl* node,
+    llvm::raw_ostream& os) {
+#ifdef NDEBUG
+  node->dump(os);
+#else
+  os << "Code: " << node2str(ctx, node) << "\n";
+  node->dump(os);
+  auto& sm = ctx.getSourceManager();
+  const auto loc = locOf(ctx.getSourceManager(), node);
+  loc.getBegin().print(os, sm);
+  os << " -> ";
+  loc.getEnd().print(os, sm);
+  os << "\n";
+#endif
+}
+
+} /* namespace */
+
+NodeFinder::NodeFinder(ASTContext& Context, llvm::raw_ostream& os) :
+    visitor(Context, os) {
+
+}
+
+NodeFinder::NodeFinder(ASTContext& Context, const SourceLocation Point,
+    const SourceLocation Point2, llvm::raw_ostream& os) :
+    visitor(Context, os) {
 
 }
 
 void NodeFinder::find(clang::TranslationUnitDecl* tu_decl,
     bool print_all_if_not_found) {
-  if (visitor.start_loc.isInvalid()) {
+  if (visitor.start_loc.location.isInvalid()) {
     return;
   }
   visitor.print_whole = print_all_if_not_found;
@@ -50,16 +73,17 @@ void NodeFinder::find(clang::TranslationUnitDecl* tu_decl,
 
 void NodeFinder::setLocation(const SourceLocation& start,
     const SourceLocation& end) {
-  visitor.start_loc = start;
+  visitor.start_loc = {start, visitor.sm().getPresumedLoc(start)};
   if (end.isValid()) {
-    visitor.end_loc = end;
+    visitor.end_loc = {end, visitor.sm().getPresumedLoc(end)};
   }
 }
 
 namespace detail {
 
-NodeFindingASTVisitor::NodeFindingASTVisitor(const ASTContext& Context) :
-    ctx(Context) {
+NodeFindingASTVisitor::NodeFindingASTVisitor(const ASTContext& Context,
+    llvm::raw_ostream& os) :
+    ctx(Context), os(os) {
 }
 
 bool NodeFindingASTVisitor::shouldVisitImplicitCode() const {
@@ -72,72 +96,81 @@ const SourceManager& NodeFindingASTVisitor::sm() {
 
 bool NodeFindingASTVisitor::TraverseTranslationUnitDecl(
     TranslationUnitDecl* decl) {
-  auto result =
+  stop_recursing = false;
+  found = false;
+
+  const auto result =
       clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseTranslationUnitDecl(
           decl);
 
   if (!found && print_whole) {
     // by: 1. traverse all decl etc. 2. filter nodes not within the main file.
-    llvm::outs() << "Print whole decl\n";
-    for (auto* d : decl->decls()) {
-      if (inMainFile(d)) {
-        debug(ctx, d);
+    os << "Print whole decl\n";
+
+    for (auto* node : decl->decls()) {
+      if (isInMainFile(node)) {
+        print(ctx, node, os);
       }
     }
   }
 
-  llvm::outs() << "-------------------------------------------\n";
-  found = false;
   return result;
 }
 
-bool NodeFindingASTVisitor::TraverseDecl(Decl* decl) {
-  if (decl && isCandidate(decl)) {
-    debug(ctx, decl);
-    found = true;
+bool NodeFindingASTVisitor::TraverseDecl(Decl* node) {
+  if (node) {
+    if (isCandidate(node)) {
+      print(ctx, node, os);
+      found = true;
+      return true;
+    }
+    if (stop_recursing) {
+      return false; // terminate
+    }
+  }
+  return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseDecl(node);
+}
+
+bool NodeFindingASTVisitor::TraverseStmt(Stmt* node) {
+  if (node) {
+    if (isCandidate(node)) {
+      print(ctx, node, os);
+      found = true;
+      return true;
+    }
+    if (stop_recursing) {
+      return false; // terminate
+    }
+  }
+  return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseStmt(node);
+}
+
+bool NodeFindingASTVisitor::within(const SourceRange& ast_range) {
+  auto& s = sm();
+  const auto line = [&s] (const SourceLocation& loc) {
+    const auto line = s.getPresumedLoc(loc).getLine();
+    return line;
+  };
+  const auto p1 = start_loc.presumed.getLine();
+  const auto p2 = end_loc.location.isValid() ? end_loc.presumed.getLine() : p1;
+  const auto d1 = line(ast_range.getBegin());
+
+  if (d1 > p2) {
+    this->stop_recursing = true;
     return false;
   }
-  return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseDecl(decl);
+
+  const auto d2 = line(ast_range.getEnd());
+  const auto enclosed = (p1 <= d1 && p2 >= d1) || (p1 <= d2 && p2 >= d2);
+
+//  if (enclosed) {
+//    os << p1 << "<=" << d1 << "&&" << p2 << ">=" << d1 << " || " << p1 <<
+//    "<=" << d2 << "&&" << p2 << ">=" << d2 << "\n";
+//  }
+  return enclosed;
 }
 
-bool NodeFindingASTVisitor::TraverseStmt(Stmt* expr) {
-  if (expr && isCandidate(expr)) {
-    debug(ctx, expr);
-    found = true;
-    return false;
-  }
-  return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseStmt(expr);
-}
-
-bool NodeFindingASTVisitor::within(const SourceRange ast_range) {
-  // FIXME only a specific cursor location is supported for now
-  if (isPointWithin(ast_range.getBegin(), ast_range.getEnd(), start_loc)) {
-    return true;
-  }
-  /*
-   if (isPointWithin(ast_range.getBegin(), ast_range.getEnd(), end_loc)) {
-   return true;
-
-   */
-  return false;
-}
-
-// \brief Determines if the Point is within Start and End.
-bool NodeFindingASTVisitor::isPointWithin(const SourceLocation Start,
-    const SourceLocation End, SourceLocation Point) {
-  // FIXME: Add tests for Point == End.
-
-  /*
-   * || (ctx.getSourceManager().isBeforeInTranslationUnit(Start, Point)
-   && ctx.getSourceManager().isBeforeInTranslationUnit(Point, End));
-   */
-
-  return Point == Start
-      || sm().getPresumedLoc(Start).getLine()
-          == sm().getPresumedLoc(Point).getLine();
-
-}
-
-}
+} /* namespace detail */
 
 } /* namespace astprinter */
+
