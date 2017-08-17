@@ -15,17 +15,15 @@ namespace astprinter {
 
 namespace {
 
-inline void print(const ASTContext& ctx, const Stmt* node,
-    llvm::raw_ostream& os) {
+inline void print(ASTContext& ctx, const Stmt* node, llvm::raw_ostream& os) {
   // non-const SM for printing in color to "os" needed
-  auto& sm = const_cast<SourceManager&>(ctx.getSourceManager());
+  auto& sm = ctx.getSourceManager();
 #ifdef NDEBUG
   node->dump(os, sm);
 #else
   os << "Code: " << node2str(ctx, node) << "\n";
   node->dump(os, sm);
-  auto& sm = ctx.getSourceManager();
-  const auto loc = locOf(ctx.getSourceManager(), node);
+  const auto loc = locOf(sm, node);
   loc.getBegin().print(os, sm);
   os << " -> ";
   loc.getEnd().print(os, sm);
@@ -33,15 +31,14 @@ inline void print(const ASTContext& ctx, const Stmt* node,
 #endif
 }
 
-inline void print(const ASTContext& ctx, const Decl* node,
-    llvm::raw_ostream& os) {
+inline void print(ASTContext& ctx, const Decl* node, llvm::raw_ostream& os) {
 #ifdef NDEBUG
   node->dump(os);
 #else
   os << "Code: " << node2str(ctx, node) << "\n";
   node->dump(os);
   auto& sm = ctx.getSourceManager();
-  const auto loc = locOf(ctx.getSourceManager(), node);
+  const auto loc = locOf(sm, node);
   loc.getBegin().print(os, sm);
   os << " -> ";
   loc.getEnd().print(os, sm);
@@ -81,7 +78,7 @@ void NodeFinder::setLocation(const SourceLocation& start,
 
 namespace detail {
 
-NodeFindingASTVisitor::NodeFindingASTVisitor(const ASTContext& Context,
+NodeFindingASTVisitor::NodeFindingASTVisitor(ASTContext& Context,
     llvm::raw_ostream& os) :
     ctx(Context), os(os) {
 }
@@ -117,33 +114,24 @@ bool NodeFindingASTVisitor::TraverseTranslationUnitDecl(
   return result;
 }
 
-bool NodeFindingASTVisitor::TraverseDecl(Decl* node) {
-  if (node) {
-    if (isCandidate(node)) {
-      print(ctx, node, os);
-      found = true;
-      return true;
-    }
-    if (stop_recursing) {
-      return false; // terminate
-    }
-  }
-  return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseDecl(node);
-}
+#define traverseNode(node_t) \
+		bool NodeFindingASTVisitor::Traverse##node_t(node_t* node) { \
+		  if (node) { \
+		    if (isCandidate(node)) { \
+		      print(ctx, node, os); \
+		      found = true; \
+		      return true; \
+		    } \
+		    if (stop_recursing) { \
+		      return false;  \
+		    } \
+		  } \
+		  return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::Traverse##node_t(node); \
+		}
+traverseNode(Decl)
+traverseNode(Stmt)
+#undef traverseNode
 
-bool NodeFindingASTVisitor::TraverseStmt(Stmt* node) {
-  if (node) {
-    if (isCandidate(node)) {
-      print(ctx, node, os);
-      found = true;
-      return true;
-    }
-    if (stop_recursing) {
-      return false; // terminate
-    }
-  }
-  return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseStmt(node);
-}
 
 bool NodeFindingASTVisitor::within(const SourceRange& ast_range) {
   auto& s = sm();

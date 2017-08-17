@@ -49,7 +49,7 @@ class NodeFindingASTVisitor: public clang::RecursiveASTVisitor<
 
   friend NodeFinder;
 private:
-  const ASTContext& ctx;
+  ASTContext& ctx;
   llvm::raw_ostream& os;
   loc_pair_t start_loc {};
   loc_pair_t end_loc {};
@@ -58,7 +58,7 @@ private:
   bool stop_recursing { false };
 
 public:
-  explicit NodeFindingASTVisitor(const ASTContext& Context,
+  explicit NodeFindingASTVisitor(ASTContext& Context,
       llvm::raw_ostream& os = llvm::outs());
 
   bool shouldVisitImplicitCode() const;
