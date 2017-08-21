@@ -48,6 +48,7 @@ int main(int argc, const char **argv) {
       color = !color;
       llvm::outs() << "Show color " << (color ? "on.\n" : "off.\n");
       visitor.showColor(color);
+      continue;
     }
     std::istringstream is(*line);
     auto numbers = std::vector<unsigned>(std::istream_iterator<unsigned>(is),

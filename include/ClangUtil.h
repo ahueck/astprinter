@@ -14,6 +14,8 @@
 
 #include <string>
 
+namespace astprinter {
+
 template<typename T>
 inline clang::SourceRange locOf(const clang::SourceManager& sm, T node,
     unsigned int offset = 0) {
@@ -65,6 +67,6 @@ inline clang::SourceLocation getLocation(const clang::SourceManager& sm, unsigne
   return loc;
 }
 
-
+} /* namespace astprinter */
 
 #endif /* INCLUDE_CLANGUTIL_H_ */
