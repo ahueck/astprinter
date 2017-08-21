@@ -44,7 +44,7 @@ class NodeFindingASTVisitor: public clang::RecursiveASTVisitor<
 //  using loc_pair_t = std::pair<SourceLocation, PresumedLoc>;
   struct loc_pair_t {
     SourceLocation location;
-    PresumedLoc presumed;
+    unsigned line;
   };
 
   friend NodeFinder;
@@ -107,7 +107,9 @@ public:
   NodeFinder(ASTContext& Context, const SourceLocation Point,
       const SourceLocation Point2, llvm::raw_ostream& os = llvm::outs());
 
-  void find(TranslationUnitDecl* tu_decl, bool print_all_if_not_found = false);
+  void showColor(bool color = true);
+
+  void find(bool print_all_if_not_found = false);
 
   void setLocation(const SourceLocation& start, const SourceLocation& end =
       SourceLocation());

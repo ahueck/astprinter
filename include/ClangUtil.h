@@ -54,4 +54,17 @@ inline clang::SourceLocation getLocation(const clang::ASTUnit* u, unsigned line,
   return loc;
 }
 
+inline clang::SourceLocation getLocation(const clang::SourceManager& sm, unsigned line,
+    unsigned column) {
+  // if line > source file lines, loc to last source line is returned instead
+  if (line == 0 || column == 0) {
+    return {};
+  }
+  const auto fileid_main = sm.getMainFileID();
+  auto loc = sm.translateLineCol(fileid_main, line, column);
+  return loc;
+}
+
+
+
 #endif /* INCLUDE_CLANGUTIL_H_ */

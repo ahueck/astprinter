@@ -59,20 +59,24 @@ NodeFinder::NodeFinder(ASTContext& Context, const SourceLocation Point,
 
 }
 
-void NodeFinder::find(clang::TranslationUnitDecl* tu_decl,
-    bool print_all_if_not_found) {
+void NodeFinder::showColor(bool color) {
+  visitor.sm().getDiagnostics().setShowColors(color);
+}
+
+void NodeFinder::find(bool print_all_if_not_found) {
   if (visitor.start_loc.location.isInvalid()) {
     return;
   }
+  auto tu_decl = visitor.ctx.getTranslationUnitDecl();
   visitor.print_whole = print_all_if_not_found;
   visitor.TraverseTranslationUnitDecl(tu_decl);
 }
 
 void NodeFinder::setLocation(const SourceLocation& start,
     const SourceLocation& end) {
-  visitor.start_loc = {start, visitor.sm().getPresumedLoc(start)};
+  visitor.start_loc = {start, visitor.sm().getExpansionLineNumber(start)};
   if (end.isValid()) {
-    visitor.end_loc = {end, visitor.sm().getPresumedLoc(end)};
+    visitor.end_loc = {end, visitor.sm().getExpansionLineNumber(end)};
   }
 }
 
@@ -132,23 +136,18 @@ traverseNode(Decl)
 traverseNode(Stmt)
 #undef traverseNode
 
-
 bool NodeFindingASTVisitor::within(const SourceRange& ast_range) {
   auto& s = sm();
-  const auto line = [&s] (const SourceLocation& loc) {
-    const auto line = s.getPresumedLoc(loc).getLine();
-    return line;
-  };
-  const auto p1 = start_loc.presumed.getLine();
-  const auto p2 = end_loc.location.isValid() ? end_loc.presumed.getLine() : p1;
-  const auto d1 = line(ast_range.getBegin());
+  const auto p1 = start_loc.line;
+  const auto p2 = end_loc.location.isValid() ? end_loc.line : p1;
+  const auto d1 = s.getExpansionLineNumber(ast_range.getBegin());
 
   if (d1 > p2) {
     this->stop_recursing = true;
     return false;
   }
 
-  const auto d2 = line(ast_range.getEnd());
+  const auto d2 = s.getExpansionLineNumber(ast_range.getEnd());
   const auto enclosed = (p1 <= d1 && p2 >= d1) || (p1 <= d2 && p2 >= d2);
 
 //  if (enclosed) {
