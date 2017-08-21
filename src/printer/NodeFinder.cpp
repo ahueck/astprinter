@@ -118,20 +118,20 @@ bool NodeFindingASTVisitor::TraverseTranslationUnitDecl(
   return result;
 }
 
-#define traverseNode(node_t) \
-		bool NodeFindingASTVisitor::Traverse##node_t(node_t* node) { \
-		  if (node) { \
-		    if (isCandidate(node)) { \
-		      print(ctx, node, os); \
-		      found = true; \
-		      return true; \
-		    } \
-		    if (stop_recursing) { \
-		      return false;  \
-		    } \
-		  } \
-		  return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::Traverse##node_t(node); \
-		}
+#define traverseNode(node_t)                                                            \
+    bool NodeFindingASTVisitor::Traverse##node_t(node_t* node) {                        \
+      if (node) {                                                                       \
+        if (isCandidate(node)) {                                                        \
+          print(ctx, node, os);                                                         \
+          found = true;                                                                 \
+          return true;                                                                  \
+        }                                                                               \
+        if (stop_recursing) {                                                           \
+          return false;                                                                 \
+        }                                                                               \
+      }                                                                                 \
+      return clang::RecursiveASTVisitor<NodeFindingASTVisitor>::Traverse##node_t(node); \
+    }
 traverseNode(Decl)
 traverseNode(Stmt)
 #undef traverseNode

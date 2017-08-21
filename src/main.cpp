@@ -36,10 +36,16 @@ int main(int argc, const char **argv) {
   std::vector<std::unique_ptr<clang::ASTUnit>> av;
   tool.buildASTs(av);
 
+  if(av.empty()) {
+    return 0;
+  }
+
+  bool color { colors.getValue() };
   auto& ctx = av[0]->getASTContext();
 
   NodeFinder visitor(ctx, llvm::outs());
-  bool color { colors.getValue() };
+  visitor.showColor(color);
+
   llvm::LineEditor le("ast-printer");
   while (llvm::Optional<std::string> line = le.readLine()) {
     if (*line == "q" || *line == "quit") {
