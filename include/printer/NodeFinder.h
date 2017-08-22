@@ -71,25 +71,13 @@ public:
   bool TraverseStmt(Stmt* stmt);
 
 private:
-  const SourceManager& sm();
-
-  template<typename Node>
-  bool within(Node n) {
-    const auto& m = sm();
-    auto loc = locOf(m, n);
-    return within(loc);
-  }
-
-  template<typename Node>
-  bool isInMainFile(Node n) {
-    return sm().isInMainFile(n->getLocStart());
-  }
+  const SourceManager& sm() const;
 
   template<typename Node>
   bool isCandidate(Node n) {
     const auto& m = sm();
     auto loc = locOf(m, n);
-    return isInMainFile(n) && within(loc);
+    return m.isInMainFile(loc.getBegin()) && within(loc);
   }
 
   bool within(const SourceRange& ast_range);

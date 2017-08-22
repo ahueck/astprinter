@@ -94,7 +94,7 @@ bool NodeFindingASTVisitor::shouldVisitImplicitCode() const {
   return false;
 }
 
-const SourceManager& NodeFindingASTVisitor::sm() {
+const SourceManager& NodeFindingASTVisitor::sm() const {
   return ctx.getSourceManager();
 }
 
@@ -110,9 +110,9 @@ bool NodeFindingASTVisitor::TraverseTranslationUnitDecl(
   if (!found && print_whole) {
     // by: 1. traverse all decl etc. 2. filter nodes not within the main file.
     os << "Print whole decl\n";
-
-    for (auto* node : decl->decls()) {
-      if (isInMainFile(node)) {
+    const auto& m = sm();
+    for (const auto* node : decl->decls()) {
+      if (m.isInMainFile(node->getLocStart())) {
         print(ctx, node, os);
       }
     }
