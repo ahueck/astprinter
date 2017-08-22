@@ -8,8 +8,11 @@
 #include <printer/NodeFinder.h>
 #include <ClangUtil.h>
 
-#include <utility>
-#include <type_traits>
+#include <clang/AST/ASTContext.h>
+#include <clang/AST/Decl.h>
+#include <clang/AST/DeclBase.h>
+#include <clang/AST/Stmt.h>
+#include <clang/Basic/Diagnostic.h>
 
 namespace astprinter {
 

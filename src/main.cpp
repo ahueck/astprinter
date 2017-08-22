@@ -1,22 +1,23 @@
 #include <printer/NodeFinder.h>
-
 #include <ClangUtil.h>
 
-#include <clang/Tooling/Tooling.h>
+#include <clang/AST/ASTContext.h>
+#include <clang/Frontend/ASTUnit.h>
 #include <clang/Tooling/CommonOptionsParser.h>
+#include <clang/Tooling/Tooling.h>
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/ADT/Optional.h>
+#include <llvm/ADT/StringRef.h>
 #include <llvm/LineEditor/LineEditor.h>
 #include <llvm/Support/CommandLine.h>
-
-#include <clang/Frontend/ASTConsumers.h>
-#include <clang/Frontend/CompilerInstance.h>
-#include <clang/Frontend/FrontendActions.h>
+#include <llvm/Support/raw_ostream.h>
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <memory>
 
 using namespace astprinter;
 using namespace llvm;

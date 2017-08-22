@@ -8,10 +8,12 @@
 #ifndef INCLUDE_PRINTER_NODEFINDER_H_
 #define INCLUDE_PRINTER_NODEFINDER_H_
 
-#include <clang/AST/RecursiveASTVisitor.h>
 #include <ClangUtil.h>
 
-#include <utility>
+#include <clang/AST/RecursiveASTVisitor.h>
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Basic/SourceManager.h>
+#include <llvm/Support/raw_ostream.h>
 
 namespace clang {
 class ASTContext;
@@ -19,7 +21,6 @@ class Decl;
 class Expr;
 class Stmt;
 class TranslationUnitDecl;
-class SourceManager;
 }
 
 namespace astprinter {
