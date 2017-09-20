@@ -83,6 +83,13 @@ void NodeFinder::setLocation(const SourceLocation& start,
   }
 }
 
+void NodeFinder::setLocation(unsigned s, unsigned e) {
+  const auto start = getLocation(visitor.sm(), s, 1);
+  const auto end = getLocation(visitor.sm(), e, 1);
+
+  setLocation(start, end);
+}
+
 namespace detail {
 
 NodeFindingASTVisitor::NodeFindingASTVisitor(ASTContext& Context,
