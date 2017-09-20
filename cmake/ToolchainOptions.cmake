@@ -111,6 +111,7 @@ else()
 endif()
 
 message(STATUS "Build Type: "             ${CMAKE_BUILD_TYPE})
+message(STATUS "Install prefix: "         ${CMAKE_INSTALL_PREFIX})
 if(SANITIZE)
   message(STATUS "Requested Sanitizer: "  ${SANITIZE})
 else()

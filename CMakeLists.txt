@@ -24,24 +24,46 @@ add_library(astprint
 	${printer_sources}
 )
 
-add_executable(astprinter${EXE_SUFFIX} 
+set_target_properties(astprint
+  PROPERTIES PUBLIC_HEADER "include/printer/NodeFinder.h;include/ClangUtil.h")
+
+target_link_libraries(astprint
+  ${CLANG_LIBS}
+  -lLLVMSupport
+  -lLLVMMCParser
+  -lLLVMBitReader -lLLVMProfileData
+  -lLLVMOption -lLLVMCore
+  -lLLVMMC -lLLVMSupport
+  -lLLVMDemangle
+  ${LLVM_SYSTEM_LIBS}
+)
+
+add_executable(astprinter${EXE_SUFFIX}
   src/main.cpp
 )
 
-target_link_libraries(astprinter${EXE_SUFFIX} 
+target_link_libraries(astprinter${EXE_SUFFIX}
   astprint
   ${CLANG_LIBS}
   ${libedit_LIBRARIES}
   -lLLVMLineEditor -lLLVMSupport
-  -lLLVMLineEditor -lLLVMMCParser 
-  -lLLVMBitReader -lLLVMProfileData 
-  -lLLVMOption -lLLVMCore 
-  -lLLVMMC -lLLVMSupport 
-  -lLLVMDemangle 
-  ${LLVM_SYSTEM_LIBS} 
+  -lLLVMLineEditor -lLLVMMCParser
+  -lLLVMBitReader -lLLVMProfileData
+  -lLLVMOption -lLLVMCore
+  -lLLVMMC -lLLVMSupport
+  -lLLVMDemangle
+  ${LLVM_SYSTEM_LIBS}
 )
 
 add_custom_target(executable
   COMMENT "Target to compile astprinter executable"
   DEPENDS astprinter${EXE_SUFFIX}
+)
+
+install(
+  TARGETS astprinter${EXE_SUFFIX} astprint
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  PUBLIC_HEADER DESTINATION include
 )
