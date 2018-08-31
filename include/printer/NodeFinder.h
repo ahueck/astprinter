@@ -15,6 +15,8 @@
 #include <clang/Basic/SourceManager.h>
 #include <llvm/Support/raw_ostream.h>
 
+#include <clang/AST/AST.h>
+
 namespace clang {
 class ASTContext;
 class Decl;
@@ -22,7 +24,7 @@ class Expr;
 class Stmt;
 class TranslationUnitDecl;
 }
-
+using namespace clang;
 namespace astprinter {
 
 using clang::ASTContext;
@@ -52,15 +54,15 @@ class NodeFindingASTVisitor: public clang::RecursiveASTVisitor<
 private:
   ASTContext& ctx;
   llvm::raw_ostream& os;
-  loc_pair_t start_loc {};
-  loc_pair_t end_loc {};
+  loc_pair_t start_loc { };
+  loc_pair_t end_loc { };
   bool found { false };
   bool print_whole { false };
   bool stop_recursing { false };
 
 public:
-  explicit NodeFindingASTVisitor(ASTContext& Context,
-      llvm::raw_ostream& os = llvm::outs());
+  explicit NodeFindingASTVisitor(ASTContext& Context, llvm::raw_ostream& os =
+      llvm::outs());
 
   bool shouldVisitImplicitCode() const;
 
@@ -91,7 +93,8 @@ private:
   detail::NodeFindingASTVisitor visitor;
 
 public:
-  explicit NodeFinder(ASTContext& Context, llvm::raw_ostream& os = llvm::outs());
+  explicit NodeFinder(ASTContext& Context, llvm::raw_ostream& os =
+      llvm::outs());
 
   NodeFinder(ASTContext& Context, const SourceLocation Point,
       const SourceLocation Point2, llvm::raw_ostream& os = llvm::outs());
