@@ -30,3 +30,8 @@ install(
   ARCHIVE DESTINATION lib
   PUBLIC_HEADER DESTINATION include
 )
+
+install(
+  FILES ${PROJECT_SOURCE_DIR}/include/printer/NodeFinder.h
+  DESTINATION include
+)
