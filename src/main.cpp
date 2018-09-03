@@ -28,6 +28,8 @@ using namespace clang::tooling;
 static llvm::cl::OptionCategory ASTPrinter("AST Printer Sample");
 
 static cl::opt<bool> colors("color", cl::init(true), cl::desc("Enable or disable color output"), cl::cat(ASTPrinter));
+static cl::opt<bool> sources("source", cl::init(false), cl::desc("Enable or disable source output"),
+                             cl::cat(ASTPrinter));
 
 int main(int argc, const char** argv) {
   CommonOptionsParser op(argc, argv, ASTPrinter);
@@ -41,6 +43,7 @@ int main(int argc, const char** argv) {
   }
 
   bool color{colors.getValue()};
+  bool source{sources.getValue()};
   auto& ctx = av[0]->getASTContext();
 
   NodeFinder visitor(ctx, llvm::outs());
@@ -54,6 +57,11 @@ int main(int argc, const char** argv) {
       color = !color;
       llvm::outs() << "Show color " << (color ? "on.\n" : "off.\n");
       visitor.showColor(color);
+      continue;
+    } else if (*line == "s" || *line == "source") {
+      source = !source;
+      llvm::outs() << "Show source " << (source ? "on.\n" : "off.\n");
+      visitor.showSource(source);
       continue;
     }
     std::istringstream is(*line);
