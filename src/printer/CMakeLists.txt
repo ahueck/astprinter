@@ -32,6 +32,8 @@ install(
 )
 
 install(
-  FILES ${PROJECT_SOURCE_DIR}/include/printer/NodeFinder.h
+  FILES 
+    ${PROJECT_SOURCE_DIR}/include/printer/NodeFinder.h
+    ${PROJECT_SOURCE_DIR}/include/ClangUtil.h
   DESTINATION include
 )
