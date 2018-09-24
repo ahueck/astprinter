@@ -30,6 +30,29 @@ static llvm::cl::OptionCategory ASTPrinter("AST Printer Sample");
 static cl::opt<bool> colors("color", cl::init(true), cl::desc("Enable or disable color output"), cl::cat(ASTPrinter));
 static cl::opt<bool> sources("source", cl::init(false), cl::desc("Enable or disable source output"),
                              cl::cat(ASTPrinter));
+namespace {
+StringRef lexWord(StringRef word) {
+  StringRef::iterator begin{word.begin()};
+  StringRef::iterator end{word.end()};
+  while (true) {
+    if (begin == end) {
+      return StringRef(begin, 0);
+    }
+    if (!isWhitespace(*begin)) {
+      break;
+    }
+    ++begin;
+  }
+  StringRef::iterator wordbegin = begin;
+  while (true) {
+    ++begin;
+
+    if (begin == end || isWhitespace(*begin)) {
+      return StringRef(wordbegin, begin - wordbegin);
+    }
+  }
+}
+}  // namespace
 
 int main(int argc, const char** argv) {
   CommonOptionsParser op(argc, argv, ASTPrinter);
@@ -51,19 +74,41 @@ int main(int argc, const char** argv) {
 
   llvm::LineEditor le("ast-printer");
   while (llvm::Optional<std::string> line = le.readLine()) {
-    if (*line == "q" || *line == "quit") {
+    StringRef ref = *line;
+    auto cmd = lexWord(ref);
+
+    if (cmd == "q" || cmd == "quit") {
       break;
-    } else if (*line == "c" || *line == "color") {
+    } else if (cmd == "c" || cmd == "color") {
       color = !color;
       llvm::outs() << "Show color " << (color ? "on.\n" : "off.\n");
       visitor.showColor(color);
       continue;
-    } else if (*line == "s" || *line == "source") {
+    } else if (cmd == "s" || cmd == "source") {
       source = !source;
       llvm::outs() << "Show source " << (source ? "on.\n" : "off.\n");
       visitor.showSource(source);
       continue;
+    } else if (cmd == "m" || cmd == "match") {
+      auto str = lexWord(StringRef(cmd.end(), ref.end() - cmd.end()));
+      if (str == "") {
+        str = ".*";
+      }
+      {
+        std::string error;
+        llvm::Regex r(str);
+        if (!r.isValid(error)) {
+          llvm::outs() << "Invalid regex (" << error << "): \"" << str << "\"\n";
+          continue;
+        }
+      }
+      visitor.printFunctionDecls(str);
+      continue;
+    } else if (cmd == "l" || cmd == "list") {
+      visitor.printFunctionDecls(".*");
+      continue;
     }
+
     std::istringstream is(*line);
     auto numbers = std::vector<unsigned>(std::istream_iterator<unsigned>(is), {});
     const auto size = numbers.size();

@@ -13,6 +13,7 @@
 #include <clang/AST/DeclBase.h>
 #include <clang/AST/Stmt.h>
 #include <clang/Basic/Diagnostic.h>
+#include <llvm/Support/Regex.h>
 
 namespace astprinter {
 
@@ -70,6 +71,10 @@ void NodeFinder::find(bool print_all_if_not_found) {
   auto tu_decl = visitor.ctx.getTranslationUnitDecl();
   visitor.print_whole = print_all_if_not_found;
   visitor.TraverseTranslationUnitDecl(tu_decl);
+}
+
+void NodeFinder::printFunctionDecls(const std::string regex, bool add_mangle) const {
+  listFunctionDecls(visitor.ctx, regex, visitor.os);
 }
 
 void NodeFinder::setLocation(const SourceLocation& start, const SourceLocation& end) {

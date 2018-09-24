@@ -101,6 +101,8 @@ class NodeFinder {
 
   void find(bool print_all_if_not_found = false);
 
+  void printFunctionDecls(const std::string regex = ".*", bool add_mangle = false) const;
+
   void setLocation(const SourceLocation& start, const SourceLocation& end = SourceLocation());
 
   void setLocation(unsigned line_start, unsigned line_end);
