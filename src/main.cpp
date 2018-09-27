@@ -89,12 +89,11 @@ int main(int argc, const char** argv) {
       llvm::outs() << "Show source " << (source ? "on.\n" : "off.\n");
       visitor.showSource(source);
       continue;
-    } else if (cmd == "m" || cmd == "match") {
+    } else if (cmd == "l" || cmd == "list") {
       auto str = lexWord(StringRef(cmd.end(), ref.end() - cmd.end()));
       if (str == "") {
         str = ".*";
-      }
-      {
+      } else {
         std::string error;
         llvm::Regex r(str);
         if (!r.isValid(error)) {
@@ -103,9 +102,6 @@ int main(int argc, const char** argv) {
         }
       }
       visitor.printFunctionDecls(str);
-      continue;
-    } else if (cmd == "l" || cmd == "list") {
-      visitor.printFunctionDecls(".*");
       continue;
     }
 
@@ -116,11 +112,9 @@ int main(int argc, const char** argv) {
       llvm::outs() << "Erroneous input of size: " << size << "\n";
       continue;
     }
-    unsigned locs[2] = {0, 0};
-    std::copy(std::begin(numbers), std::end(numbers), std::begin(locs));
 
-    const auto start = getLocation(ctx.getSourceManager(), locs[0], 1);
-    const auto end = getLocation(ctx.getSourceManager(), locs[1], 1);
+    const auto start = getLocation(ctx.getSourceManager(), numbers[0], 1);
+    const auto end = getLocation(ctx.getSourceManager(), numbers[1], 1);
 
     visitor.setLocation(start, end);
     visitor.find();

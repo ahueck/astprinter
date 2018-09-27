@@ -27,9 +27,7 @@ inline void print(ASTContext& ctx, const Stmt* node, llvm::raw_ostream& os, bool
   }
   node->dump(os, sm);
   const auto loc = locOf(sm, node);
-  loc.getBegin().print(os, sm);
-  os << " -> ";
-  loc.getEnd().print(os, sm);
+  os << printToString(sm, loc);
   os << "\n";
 }
 
@@ -40,9 +38,7 @@ inline void print(ASTContext& ctx, const Decl* node, llvm::raw_ostream& os, bool
   node->dump(os);
   auto& sm = ctx.getSourceManager();
   const auto loc = locOf(sm, node);
-  loc.getBegin().print(os, sm);
-  os << " -> ";
-  loc.getEnd().print(os, sm);
+  os << printToString(sm, loc);
   os << "\n";
 }
 

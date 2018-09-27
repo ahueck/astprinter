@@ -61,7 +61,7 @@ inline clang::SourceLocation getLocation(const clang::SourceManager& sm, unsigne
   return loc;
 }
 
-inline std::string printToString(const clang::SourceManager& SM, clang::SourceLocation loc) {
+inline std::string printToString(const clang::SourceManager& SM, clang::SourceLocation loc, bool with_file = true) {
   using namespace clang;
   std::string S;
   llvm::raw_string_ostream OS(S);
@@ -79,22 +79,28 @@ inline std::string printToString(const clang::SourceManager& SM, clang::SourceLo
       return OS.str();
     }
     // The macro expansion and spelling pos is identical for file locs.
-    OS << PLoc.getLine() << ':' << PLoc.getColumn();
+    if (with_file) {
+      OS << PLoc.getFilename() << ":" << PLoc.getLine() << ':' << PLoc.getColumn();
+    } else {
+      OS << PLoc.getLine() << ':' << PLoc.getColumn();
+    }
     return OS.str();
   }
 
   // TODO test code path
-  SM.getExpansionLoc(loc).print(OS, SM);
+  auto expansionLoc = SM.getExpansionLoc(loc);
+  OS << printToString(SM, expansionLoc, with_file);
 
   OS << " <Spelling=";
-  SM.getSpellingLoc(loc).print(OS, SM);
+  auto spellingloc = SM.getSpellingLoc(loc);
+  OS << printToString(SM, spellingloc, with_file);
   OS << '>';
 
   return OS.str();
 }
 
 inline std::string printToString(const clang::SourceManager& SM, clang::SourceRange range) {
-  return printToString(SM, range.getBegin()) + "->" + printToString(SM, range.getEnd());
+  return printToString(SM, range.getBegin()) + "->" + printToString(SM, range.getEnd(), false);
 }
 
 namespace detail {
@@ -117,11 +123,10 @@ inline void printDecls(const clang::ASTContext& ac, llvm::SmallVector<clang::Nam
                        const std::string& regex, llvm::raw_ostream& out = llvm::outs()) {
   const auto& m = ac.getSourceManager();
   llvm::Regex r(regex);
-  const auto match = [&r](auto in) { return r.match(in); };
   for (const auto* node : decls) {
     if (m.isInMainFile(node->getLocStart())) {
       const auto name = node->getNameAsString();
-      if (match(name)) {
+      if (r.match(name)) {
         auto loc = locOf(m, node);
         out << name << ":" << printToString(m, loc) << "\n";
       }
