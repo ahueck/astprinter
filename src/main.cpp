@@ -114,7 +114,7 @@ int main(int argc, const char** argv) {
     }
 
     const auto start = getLocation(ctx.getSourceManager(), numbers[0], 1);
-    const auto end = getLocation(ctx.getSourceManager(), numbers[1], 1);
+    const auto end = size == 2 ? getLocation(ctx.getSourceManager(), numbers[1], 1) : SourceLocation();
 
     visitor.setLocation(start, end);
     visitor.find();
