@@ -37,3 +37,6 @@ install(
     ${PROJECT_SOURCE_DIR}/include/ClangUtil.h
   DESTINATION include
 )
+
+# Hacky: Here, the install code is guaranteed to run last (after ${CMAKE_INSTALL_PREFIX}/lib folder was created)
+install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CLANG_INSTALL_PREFIX}/lib/clang ${CMAKE_INSTALL_PREFIX}/lib/clang)")
