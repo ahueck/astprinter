@@ -11,6 +11,7 @@
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Lex/Lexer.h>
 #include <clang/Tooling/Tooling.h>
+#include <llvm/Demangle/Demangle.h>
 #include <llvm/Support/raw_ostream.h>
 
 #include <string>
@@ -103,6 +104,16 @@ inline std::string printToString(const clang::SourceManager& SM, clang::SourceRa
   return printToString(SM, range.getBegin()) + "->" + printToString(SM, range.getEnd(), false);
 }
 
+template <typename String>
+inline std::string try_demangle(String s) {
+  std::string name = s;
+  auto demangle = llvm::itaniumDemangle(s.data(), nullptr, nullptr, nullptr);
+  if (demangle && std::string(demangle) != "") {
+    return std::string(demangle);
+  }
+  return name;
+}
+
 namespace detail {
 template <typename Predicate>
 inline llvm::SmallVector<clang::NamedDecl*, 32> find_decls(const clang::ASTContext& ac, Predicate p) {
@@ -133,6 +144,24 @@ inline void printDecls(const clang::ASTContext& ac, llvm::SmallVector<clang::Nam
     }
   }
 }
+
+inline void dumpDecls(const clang::ASTContext& ac, llvm::SmallVector<clang::NamedDecl*, 32>& decls,
+                      const std::string& regex, llvm::raw_ostream& out = llvm::outs()) {
+  const auto& m = ac.getSourceManager();
+  llvm::Regex r(regex);
+  for (const auto* node : decls) {
+    if (m.isInMainFile(node->getLocStart())) {
+      const auto name = node->getNameAsString();
+      if (r.match(name)) {
+        node->dump(out);
+        auto& sm = ac.getSourceManager();
+        const auto loc = locOf(sm, node);
+        out << printToString(sm, loc);
+        out << "\n";
+      }
+    }
+  }
+}
 }  // namespace detail
 
 inline void listFunctionDecls(const clang::ASTContext& ac, std::string regex = ".*",
@@ -145,6 +174,12 @@ inline void listNamedDecls(const clang::ASTContext& ac, std::string regex = ".*"
                            llvm::raw_ostream& out = llvm::outs()) {
   auto nDecls = detail::find_decls(ac, [](auto d) { return llvm::isa<clang::NamedDecl>(d); });
   detail::printDecls(ac, nDecls, regex, out);
+}
+
+inline void dumpFunctionDecls(const clang::ASTContext& ac, std::string regex = ".*",
+                              llvm::raw_ostream& out = llvm::outs()) {
+  auto nDecls = detail::find_decls(ac, [](auto d) { return llvm::isa<clang::NamedDecl>(d); });
+  detail::dumpDecls(ac, nDecls, regex, out);
 }
 
 } /* namespace astprinter */

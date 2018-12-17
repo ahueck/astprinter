@@ -89,7 +89,7 @@ int main(int argc, const char** argv) {
       llvm::outs() << "Show source " << (source ? "on.\n" : "off.\n");
       visitor.showSource(source);
       continue;
-    } else if (cmd == "l" || cmd == "list") {
+    } else if (cmd == "l" || cmd == "list" || cmd == "p" || cmd == "print") {
       auto str = lexWord(StringRef(cmd.end(), ref.end() - cmd.end()));
       if (str == "") {
         str = ".*";
@@ -101,7 +101,19 @@ int main(int argc, const char** argv) {
           continue;
         }
       }
-      visitor.printFunctionDecls(str);
+
+      if (cmd == "p" || cmd == "print") {
+        visitor.dumpFunctions(str);
+      } else {
+        visitor.printFunctionDecls(str);
+      }
+
+      continue;
+    } else if (cmd == "d" || cmd == "demangle") {
+      auto str = lexWord(StringRef(cmd.end(), ref.end() - cmd.end()));
+      auto demangled_name = NodeFinder::demangle(str);
+      llvm::outs() << "Demangled name: " << demangled_name << "\n";
+
       continue;
     }
 

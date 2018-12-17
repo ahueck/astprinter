@@ -103,9 +103,13 @@ class NodeFinder {
 
   void printFunctionDecls(const std::string regex = ".*", bool add_mangle = false) const;
 
+  void dumpFunctions(const std::string regex = ".*", bool add_mangle = false) const;
+
   void setLocation(const SourceLocation& start, const SourceLocation& end = SourceLocation());
 
   void setLocation(unsigned line_start, unsigned line_end);
+
+  static std::string demangle(const std::string name);
 };
 
 } /* namespace astprinter */
