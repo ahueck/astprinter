@@ -1,31 +1,31 @@
-add_library(astprint
+add_library(clang-ast-print
   NodeFinder.cpp
 )
 
-target_define_file_basename(astprint)
-target_project_compile_options(astprint)
-target_project_compile_definitions(astprint
+target_define_file_basename(clang-ast-print)
+target_project_compile_options(clang-ast-print)
+target_project_compile_definitions(clang-ast-print
   PRIVATE_DEFS
     LOG_LEVEL=${LOG_LEVEL}
 )
 
-target_include_directories(astprint
+target_include_directories(clang-ast-print
   PUBLIC
   ${PROJECT_SOURCE_DIR}/include
 )
 
-target_include_directories(astprint 
+target_include_directories(clang-ast-print 
   SYSTEM
   PUBLIC
   ${LLVM_INCLUDE_DIRS}
 )
 
-target_link_libraries(astprint
+target_link_libraries(clang-ast-print
   ${CLANG_EXPORTED_TARGETS}
 )
 
 install(
-  TARGETS astprint
+  TARGETS clang-ast-print
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   PUBLIC_HEADER DESTINATION include
