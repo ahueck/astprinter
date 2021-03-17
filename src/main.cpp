@@ -25,11 +25,11 @@ using namespace clang;
 using namespace clang::driver;
 using namespace clang::tooling;
 
-static llvm::cl::OptionCategory ASTPrinter("AST Printer Sample");
+llvm::cl::OptionCategory ASTPrinter("AST Printer Sample");
 
-static cl::opt<bool> colors("color", cl::init(true), cl::desc("Enable or disable color output"), cl::cat(ASTPrinter));
-static cl::opt<bool> sources("source", cl::init(false), cl::desc("Enable or disable source output"),
-                             cl::cat(ASTPrinter));
+cl::opt<bool> colors("use-color", cl::init(true), cl::desc("Enable or disable color output"), cl::cat(ASTPrinter));
+cl::opt<bool> sources("source", cl::init(false), cl::desc("Enable or disable source output"), cl::cat(ASTPrinter));
+
 namespace {
 StringRef lexWord(StringRef word) {
   StringRef::iterator begin{word.begin()};

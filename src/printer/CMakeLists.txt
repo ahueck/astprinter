@@ -1,6 +1,6 @@
-add_library(clang-ast-print
+add_library(clang-ast-print SHARED
   NodeFinder.cpp
-)
+  )
 
 target_define_file_basename(clang-ast-print)
 target_project_compile_options(clang-ast-print)
@@ -12,15 +12,15 @@ target_project_compile_definitions(clang-ast-print
 target_include_directories(clang-ast-print
   PUBLIC
   ${PROJECT_SOURCE_DIR}/include
-)
+  )
 
-target_include_directories(clang-ast-print 
+target_include_directories(clang-ast-print
   SYSTEM
   PUBLIC
   ${LLVM_INCLUDE_DIRS}
-)
+  )
 
-target_link_libraries(clang-ast-print
+target_link_libraries(clang-ast-print PUBLIC
   clangTooling
   )
 
@@ -32,9 +32,9 @@ install(
 )
 
 install(
-  FILES 
-    ${PROJECT_SOURCE_DIR}/include/printer/NodeFinder.h
-    ${PROJECT_SOURCE_DIR}/include/ClangUtil.h
+  FILES
+  ${PROJECT_SOURCE_DIR}/include/printer/NodeFinder.h
+  ${PROJECT_SOURCE_DIR}/include/ClangUtil.h
   DESTINATION include
 )
 
