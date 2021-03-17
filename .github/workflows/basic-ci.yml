@@ -12,8 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install Clang tools
-        run: sudo apt-get install clang-tools-10 clang-tidy-10 libclang-10-dev libclang-cpp10-dev
+      - name: Install Clang and libs
+        run: sudo apt-get install clang-tools-10 clang-tidy-10 libclang-10-dev libclang-cpp10-dev ledit
 
       - name: Setup env
         run: |
