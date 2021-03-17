@@ -21,8 +21,8 @@ target_include_directories(clang-ast-print
 )
 
 target_link_libraries(clang-ast-print
-  ${CLANG_EXPORTED_TARGETS}
-)
+  clangTooling
+  )
 
 install(
   TARGETS clang-ast-print

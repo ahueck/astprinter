@@ -13,7 +13,7 @@ target_project_compile_definitions(clang-ast-printer${EXE_SUFFIX}
 
 target_link_libraries(clang-ast-printer${EXE_SUFFIX}
   clang-ast-print
-  #${libedit_LIBRARIES}
+  LLVMLineEditor
 )
 
 add_custom_target(executable

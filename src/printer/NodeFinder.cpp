@@ -119,7 +119,7 @@ bool NodeFindingASTVisitor::TraverseTranslationUnitDecl(TranslationUnitDecl* dec
     os << "Print whole decl\n";
     const auto& m = sm();
     for (const auto* node : decl->decls()) {
-      if (m.isInMainFile(node->getLocStart())) {
+      if (m.isInMainFile(node->getBeginLoc())) {
         print(ctx, node, os, true);
       }
     }

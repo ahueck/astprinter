@@ -21,8 +21,8 @@ namespace astprinter {
 template <typename T>
 inline clang::SourceRange locOf(const clang::SourceManager& sm, T node, unsigned int offset = 0) {
   // offset=1 includes ';' (assuming no whitespaces)
-  clang::SourceLocation start(node->getLocStart());
-  clang::SourceLocation end(clang::Lexer::getLocForEndOfToken(node->getLocEnd(), 0, sm, clang::LangOptions()));
+  clang::SourceLocation start(node->getBeginLoc());
+  clang::SourceLocation end(clang::Lexer::getLocForEndOfToken(node->getEndLoc(), 0, sm, clang::LangOptions()));
   return {start, end.getLocWithOffset(offset)};
 }
 
@@ -135,7 +135,7 @@ inline void printDecls(const clang::ASTContext& ac, llvm::SmallVector<clang::Nam
   const auto& m = ac.getSourceManager();
   llvm::Regex r(regex);
   for (const auto* node : decls) {
-    if (m.isInMainFile(node->getLocStart())) {
+    if (m.isInMainFile(node->getBeginLoc())) {
       const auto name = node->getNameAsString();
       if (r.match(name)) {
         auto loc = locOf(m, node);
@@ -150,7 +150,7 @@ inline void dumpDecls(const clang::ASTContext& ac, llvm::SmallVector<clang::Name
   const auto& m = ac.getSourceManager();
   llvm::Regex r(regex);
   for (const auto* node : decls) {
-    if (m.isInMainFile(node->getLocStart())) {
+    if (m.isInMainFile(node->getBeginLoc())) {
       const auto name = node->getNameAsString();
       if (r.match(name)) {
         node->dump(out);
