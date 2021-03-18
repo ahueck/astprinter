@@ -44,7 +44,7 @@ class NodeFindingASTVisitor : public clang::RecursiveASTVisitor<NodeFindingASTVi
   //  using loc_pair_t = std::pair<SourceLocation, PresumedLoc>;
   struct loc_pair_t {
     SourceLocation location;
-    unsigned line;
+    unsigned line{};
   };
 
   friend NodeFinder;
@@ -71,7 +71,7 @@ class NodeFindingASTVisitor : public clang::RecursiveASTVisitor<NodeFindingASTVi
   bool TraverseStmt(Stmt* stmt);
 
  private:
-  const SourceManager& sm() const;
+  [[nodiscard]] const SourceManager& sm() const;
 
   template <typename Node>
   bool isCandidate(Node n) {
@@ -101,15 +101,15 @@ class NodeFinder {
 
   void find(bool print_all_if_not_found = false);
 
-  void printFunctionDecls(const std::string regex = ".*", bool add_mangle = false) const;
+  void printFunctionDecls(const std::string& regex = ".*", bool add_mangle = false) const;
 
-  void dumpFunctions(const std::string regex = ".*", bool add_mangle = false) const;
+  void dumpFunctions(const std::string& regex = ".*", bool add_mangle = false) const;
 
   void setLocation(const SourceLocation& start, const SourceLocation& end = SourceLocation());
 
   void setLocation(unsigned line_start, unsigned line_end);
 
-  static std::string demangle(const std::string name);
+  static std::string demangle(const std::string& name);
 };
 
 } /* namespace astprinter */

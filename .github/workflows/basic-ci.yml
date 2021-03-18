@@ -6,6 +6,18 @@ on:
   pull_request:
 
 jobs:
+  formatting-check:
+    runs-on: ubuntu-20.04
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    name: Formatting Check
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check code format
+        uses: jidicula/clang-format-action@v3.2.0
+        with:
+          clang-format-version: '10'
+
   build-and-run-test:
     runs-on: ubuntu-20.04
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
@@ -33,4 +45,4 @@ jobs:
       - name: Build ASTPrinter release
         run: |
           cmake -B build_rel -DCMAKE_BUILD_TYPE=Release
-          cmake --build build_rel --parallel
+          cmake --build build_rel --parallel --target install

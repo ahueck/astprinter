@@ -69,11 +69,11 @@ void NodeFinder::find(bool print_all_if_not_found) {
   visitor.TraverseTranslationUnitDecl(tu_decl);
 }
 
-void NodeFinder::printFunctionDecls(const std::string regex, bool add_mangle) const {
+void NodeFinder::printFunctionDecls(const std::string& regex, bool add_mangle) const {
   listFunctionDecls(visitor.ctx, regex, visitor.os);
 }
 
-void NodeFinder::dumpFunctions(const std::string regex, bool add_mangle) const {
+void NodeFinder::dumpFunctions(const std::string& regex, bool add_mangle) const {
   dumpFunctionDecls(visitor.ctx, regex, visitor.os);
 }
 
@@ -91,7 +91,7 @@ void NodeFinder::setLocation(unsigned s, unsigned e) {
   setLocation(start, end);
 }
 
-std::string NodeFinder::demangle(const std::string name) {
+std::string NodeFinder::demangle(const std::string& name) {
   return try_demangle(name);
 }
 
