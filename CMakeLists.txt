@@ -19,6 +19,7 @@ add_format_target(format-sources
   "Formats project source files"
   TARGETS src/*.cpp
           src/*.h
+          include/*.h
 )
 
 add_subdirectory(src)

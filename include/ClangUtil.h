@@ -45,10 +45,10 @@ inline clang::SourceLocation getLocation(const clang::ASTUnit* u, unsigned line,
   if (line == 0 || column == 0) {
     return {};
   }
-  const auto& sm = u->getSourceManager();
+  const auto& sm         = u->getSourceManager();
   const auto fileid_main = sm.getMainFileID();
-  const auto fe = sm.getFileEntryForID(fileid_main);
-  auto loc = u->getLocation(fe, line, column);
+  const auto fe          = sm.getFileEntryForID(fileid_main);
+  auto loc               = u->getLocation(fe, line, column);
   return loc;
 }
 
@@ -58,7 +58,7 @@ inline clang::SourceLocation getLocation(const clang::SourceManager& sm, unsigne
     return {};
   }
   const auto fileid_main = sm.getMainFileID();
-  auto loc = sm.translateLineCol(fileid_main, line, column);
+  auto loc               = sm.translateLineCol(fileid_main, line, column);
   return loc;
 }
 
@@ -107,7 +107,7 @@ inline std::string printToString(const clang::SourceManager& SM, clang::SourceRa
 template <typename String>
 inline std::string try_demangle(String s) {
   std::string name = s;
-  auto demangle = llvm::itaniumDemangle(s.data(), nullptr, nullptr, nullptr);
+  auto demangle    = llvm::itaniumDemangle(s.data(), nullptr, nullptr, nullptr);
   if (demangle && std::string(demangle) != "") {
     return std::string(demangle);
   }
@@ -154,7 +154,7 @@ inline void dumpDecls(const clang::ASTContext& ac, llvm::SmallVector<clang::Name
       const auto name = node->getNameAsString();
       if (r.match(name)) {
         node->dump(out);
-        auto& sm = ac.getSourceManager();
+        auto& sm       = ac.getSourceManager();
         const auto loc = locOf(sm, node);
         out << printToString(sm, loc);
         out << "\n";

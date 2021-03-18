@@ -76,7 +76,7 @@ class NodeFindingASTVisitor : public clang::RecursiveASTVisitor<NodeFindingASTVi
   template <typename Node>
   bool isCandidate(Node n) {
     const auto& m = sm();
-    auto loc = locOf(m, n);
+    auto loc      = locOf(m, n);
     return m.isInMainFile(loc.getBegin()) && within(loc);
   }
 
