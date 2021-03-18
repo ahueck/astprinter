@@ -53,16 +53,19 @@ ReturnStmt 0x1ba3220 <test.c:2:7, col:14>
 ```
 
 ## How to build
+
 ###### Requirements
-- cmake >= 3.5
-- Clang/LLVM 6.0 (cmake needs to find the installation, see the [LLVM cmake documentation](https://llvm.org/docs/CMake.html#id14))
-- C++ compiler with support for the C++14 standard
+
+- cmake >= 3.14
+- Clang/LLVM 10 (cmake needs to find the installation, see
+  the [LLVM cmake documentation](https://llvm.org/docs/CMake.html#id14))
+- C++ compiler with support for the C++17 standard, e.g., Clang-10
 
 ###### Build steps
-In the root project folder, execute the following commands
+
+In the root project folder, execute the following commands (see also [CI build file](.github/workflows/basic-ci.yml))
 
   ```
-  mkdir build && cd build
-  cmake .. -DCMAKE_INSTALL_PREFIX=*your path*
-  cmake --build . --target install
+  cmake -B build -DCMAKE_INSTALL_PREFIX=*your path*
+  cmake --build build --target install --parallel
   ```

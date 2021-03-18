@@ -1,0 +1,47 @@
+name: ASTPrinter-CI
+
+on:
+  push:
+    branches: [ master, devel ]
+  pull_request:
+
+jobs:
+  formatting-check:
+    runs-on: ubuntu-20.04
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check code format
+        uses: jidicula/clang-format-action@v3.2.0
+        with:
+          clang-format-version: '10'
+
+  build-and-run-test:
+    runs-on: ubuntu-20.04
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Clang and libs
+        run: sudo apt-get install clang-tools-10 clang-tidy-10 libclang-10-dev libclang-cpp10-dev libedit-dev
+
+      - name: Setup env
+        run: |
+          sudo ln -f -s /usr/bin/clang-10 /usr/bin/clang
+          sudo ln -f -s /usr/bin/clang++-10 /usr/bin/clang++
+          sudo ln -f -s /usr/bin/FileCheck-10 /usr/bin/FileCheck
+          sudo ln -f -s /usr/bin/clang-tidy-10 /usr/bin/clang-tidy
+          echo "CC=clang-10" >> $GITHUB_ENV
+          echo "CXX=clang++-10" >> $GITHUB_ENV
+          echo "EXTERNAL_LIT=/usr/lib/llvm-10/build/utils/lit/lit.py" >> $GITHUB_ENV
+
+      - name: Build ASTPrinter
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --parallel
+
+      - name: Build ASTPrinter release
+        run: |
+          cmake -B build_rel -DCMAKE_BUILD_TYPE=Release
+          cmake --build build_rel --parallel --target install

@@ -21,8 +21,8 @@ namespace astprinter {
 template <typename T>
 inline clang::SourceRange locOf(const clang::SourceManager& sm, T node, unsigned int offset = 0) {
   // offset=1 includes ';' (assuming no whitespaces)
-  clang::SourceLocation start(node->getLocStart());
-  clang::SourceLocation end(clang::Lexer::getLocForEndOfToken(node->getLocEnd(), 0, sm, clang::LangOptions()));
+  clang::SourceLocation start(node->getBeginLoc());
+  clang::SourceLocation end(clang::Lexer::getLocForEndOfToken(node->getEndLoc(), 0, sm, clang::LangOptions()));
   return {start, end.getLocWithOffset(offset)};
 }
 
@@ -45,10 +45,10 @@ inline clang::SourceLocation getLocation(const clang::ASTUnit* u, unsigned line,
   if (line == 0 || column == 0) {
     return {};
   }
-  const auto& sm = u->getSourceManager();
+  const auto& sm         = u->getSourceManager();
   const auto fileid_main = sm.getMainFileID();
-  const auto fe = sm.getFileEntryForID(fileid_main);
-  auto loc = u->getLocation(fe, line, column);
+  const auto fe          = sm.getFileEntryForID(fileid_main);
+  auto loc               = u->getLocation(fe, line, column);
   return loc;
 }
 
@@ -58,7 +58,7 @@ inline clang::SourceLocation getLocation(const clang::SourceManager& sm, unsigne
     return {};
   }
   const auto fileid_main = sm.getMainFileID();
-  auto loc = sm.translateLineCol(fileid_main, line, column);
+  auto loc               = sm.translateLineCol(fileid_main, line, column);
   return loc;
 }
 
@@ -107,7 +107,7 @@ inline std::string printToString(const clang::SourceManager& SM, clang::SourceRa
 template <typename String>
 inline std::string try_demangle(String s) {
   std::string name = s;
-  auto demangle = llvm::itaniumDemangle(s.data(), nullptr, nullptr, nullptr);
+  auto demangle    = llvm::itaniumDemangle(s.data(), nullptr, nullptr, nullptr);
   if (demangle && std::string(demangle) != "") {
     return std::string(demangle);
   }
@@ -135,7 +135,7 @@ inline void printDecls(const clang::ASTContext& ac, llvm::SmallVector<clang::Nam
   const auto& m = ac.getSourceManager();
   llvm::Regex r(regex);
   for (const auto* node : decls) {
-    if (m.isInMainFile(node->getLocStart())) {
+    if (m.isInMainFile(node->getBeginLoc())) {
       const auto name = node->getNameAsString();
       if (r.match(name)) {
         auto loc = locOf(m, node);
@@ -150,11 +150,11 @@ inline void dumpDecls(const clang::ASTContext& ac, llvm::SmallVector<clang::Name
   const auto& m = ac.getSourceManager();
   llvm::Regex r(regex);
   for (const auto* node : decls) {
-    if (m.isInMainFile(node->getLocStart())) {
+    if (m.isInMainFile(node->getBeginLoc())) {
       const auto name = node->getNameAsString();
       if (r.match(name)) {
         node->dump(out);
-        auto& sm = ac.getSourceManager();
+        auto& sm       = ac.getSourceManager();
         const auto loc = locOf(sm, node);
         out << printToString(sm, loc);
         out << "\n";

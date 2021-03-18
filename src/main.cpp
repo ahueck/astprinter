@@ -25,11 +25,11 @@ using namespace clang;
 using namespace clang::driver;
 using namespace clang::tooling;
 
-static llvm::cl::OptionCategory ASTPrinter("AST Printer Sample");
+llvm::cl::OptionCategory ASTPrinter("AST Printer Sample");
 
-static cl::opt<bool> colors("color", cl::init(true), cl::desc("Enable or disable color output"), cl::cat(ASTPrinter));
-static cl::opt<bool> sources("source", cl::init(false), cl::desc("Enable or disable source output"),
-                             cl::cat(ASTPrinter));
+cl::opt<bool> colors("use-color", cl::init(true), cl::desc("Enable or disable color output"), cl::cat(ASTPrinter));
+cl::opt<bool> sources("source", cl::init(false), cl::desc("Enable or disable source output"), cl::cat(ASTPrinter));
+
 namespace {
 StringRef lexWord(StringRef word) {
   StringRef::iterator begin{word.begin()};
@@ -75,7 +75,7 @@ int main(int argc, const char** argv) {
   llvm::LineEditor le("ast-printer");
   while (llvm::Optional<std::string> line = le.readLine()) {
     StringRef ref = *line;
-    auto cmd = lexWord(ref);
+    auto cmd      = lexWord(ref);
 
     if (cmd == "q" || cmd == "quit") {
       break;
@@ -110,7 +110,7 @@ int main(int argc, const char** argv) {
 
       continue;
     } else if (cmd == "d" || cmd == "demangle") {
-      auto str = lexWord(StringRef(cmd.end(), ref.end() - cmd.end()));
+      auto str            = lexWord(StringRef(cmd.end(), ref.end() - cmd.end()));
       auto demangled_name = NodeFinder::demangle(str);
       llvm::outs() << "Demangled name: " << demangled_name << "\n";
 
@@ -118,7 +118,7 @@ int main(int argc, const char** argv) {
     }
 
     std::istringstream is(*line);
-    auto numbers = std::vector<unsigned>(std::istream_iterator<unsigned>(is), {});
+    auto numbers    = std::vector<unsigned>(std::istream_iterator<unsigned>(is), {});
     const auto size = numbers.size();
     if (size == 0 || size > 2) {
       llvm::outs() << "Erroneous input of size: " << size << "\n";
@@ -126,7 +126,7 @@ int main(int argc, const char** argv) {
     }
 
     const auto start = getLocation(ctx.getSourceManager(), numbers[0], 1);
-    const auto end = size == 2 ? getLocation(ctx.getSourceManager(), numbers[1], 1) : SourceLocation();
+    const auto end   = size == 2 ? getLocation(ctx.getSourceManager(), numbers[1], 1) : SourceLocation();
 
     visitor.setLocation(start, end);
     visitor.find();
