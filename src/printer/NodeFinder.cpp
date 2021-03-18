@@ -36,7 +36,7 @@ inline void print(ASTContext& ctx, const Decl* node, llvm::raw_ostream& os, bool
     os << node2str(ctx, node) << "\n";
   }
   node->dump(os);
-  auto& sm = ctx.getSourceManager();
+  auto& sm       = ctx.getSourceManager();
   const auto loc = locOf(sm, node);
   os << printToString(sm, loc);
   os << "\n";
@@ -64,7 +64,7 @@ void NodeFinder::find(bool print_all_if_not_found) {
   if (visitor.start_loc.location.isInvalid()) {
     return;
   }
-  auto tu_decl = visitor.ctx.getTranslationUnitDecl();
+  auto tu_decl        = visitor.ctx.getTranslationUnitDecl();
   visitor.print_whole = print_all_if_not_found;
   visitor.TraverseTranslationUnitDecl(tu_decl);
 }
@@ -86,7 +86,7 @@ void NodeFinder::setLocation(const SourceLocation& start, const SourceLocation& 
 
 void NodeFinder::setLocation(unsigned s, unsigned e) {
   const auto start = getLocation(visitor.sm(), s, 1);
-  const auto end = getLocation(visitor.sm(), e, 1);
+  const auto end   = getLocation(visitor.sm(), e, 1);
 
   setLocation(start, end);
 }
@@ -110,7 +110,7 @@ const SourceManager& NodeFindingASTVisitor::sm() const {
 
 bool NodeFindingASTVisitor::TraverseTranslationUnitDecl(TranslationUnitDecl* decl) {
   stop_recursing = false;
-  found = false;
+  found          = false;
 
   const auto result = clang::RecursiveASTVisitor<NodeFindingASTVisitor>::TraverseTranslationUnitDecl(decl);
 
@@ -129,7 +129,7 @@ bool NodeFindingASTVisitor::TraverseTranslationUnitDecl(TranslationUnitDecl* dec
 }
 
 bool NodeFindingASTVisitor::within(const SourceRange& ast_range) {
-  auto& s = sm();
+  auto& s       = sm();
   const auto p1 = start_loc.line;
   const auto p2 = end_loc.location.isValid() ? end_loc.line : p1;
   const auto d1 = s.getExpansionLineNumber(ast_range.getBegin());
@@ -139,7 +139,7 @@ bool NodeFindingASTVisitor::within(const SourceRange& ast_range) {
     return false;
   }
 
-  const auto d2 = s.getExpansionLineNumber(ast_range.getEnd());
+  const auto d2       = s.getExpansionLineNumber(ast_range.getEnd());
   const auto enclosed = (p1 <= d1 && p2 >= d1) || (p1 <= d2 && p2 >= d2);
 
   //  if (enclosed) {
