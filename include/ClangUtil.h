@@ -13,6 +13,7 @@
 #include <clang/Tooling/Tooling.h>
 #include <llvm/Demangle/Demangle.h>
 #include <llvm/Support/raw_ostream.h>
+#include "llvm/Support/Regex.h"
 
 #include <string>
 
@@ -107,7 +108,11 @@ inline std::string printToString(const clang::SourceManager& SM, clang::SourceRa
 template <typename String>
 inline std::string try_demangle(String s) {
   std::string name = s;
+  #if LLVM_VERSION_MAJOR == 18
+  auto demangle    = llvm::itaniumDemangle(s.data());
+  #else
   auto demangle    = llvm::itaniumDemangle(s.data(), nullptr, nullptr, nullptr);
+  #endif
   if (demangle && std::string(demangle) != "") {
     return std::string(demangle);
   }

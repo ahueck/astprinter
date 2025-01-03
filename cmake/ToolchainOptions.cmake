@@ -1,7 +1,7 @@
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 # Setup of all necessary include/lib dirs for the development of a Clang based tool
-find_package(LLVM 10 REQUIRED)
+find_package(LLVM REQUIRED)
 find_package(Clang REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
