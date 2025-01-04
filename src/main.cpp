@@ -6,7 +6,6 @@
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 #include <llvm/ADT/ArrayRef.h>
-#include <llvm/ADT/Optional.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/LineEditor/LineEditor.h>
 #include <llvm/Support/CommandLine.h>
@@ -15,6 +14,7 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -55,8 +55,17 @@ StringRef lexWord(StringRef word) {
 }  // namespace
 
 int main(int argc, const char** argv) {
+#if LLVM_VERSION_MAJOR < 14
   CommonOptionsParser op(argc, argv, ASTPrinter);
   ClangTool tool(op.getCompilations(), op.getSourcePathList());
+#else
+  auto op = CommonOptionsParser::create(argc, argv, ASTPrinter);
+  if (!op) {
+    llvm::outs() << "Erroneous input";
+    return 1;
+  }
+  ClangTool tool(op->getCompilations(), op->getSourcePathList());
+#endif
 
   std::vector<std::unique_ptr<clang::ASTUnit>> av;
   tool.buildASTs(av);
@@ -73,7 +82,7 @@ int main(int argc, const char** argv) {
   visitor.showColor(color);
 
   llvm::LineEditor le("ast-printer");
-  while (llvm::Optional<std::string> line = le.readLine()) {
+  while (auto line = le.readLine()) {
     StringRef ref = *line;
     auto cmd      = lexWord(ref);
 
@@ -103,15 +112,15 @@ int main(int argc, const char** argv) {
       }
 
       if (cmd == "p" || cmd == "print") {
-        visitor.dumpFunctions(str);
+        visitor.dumpFunctions(std::string{str});
       } else {
-        visitor.printFunctionDecls(str);
+        visitor.printFunctionDecls(std::string{str});
       }
 
       continue;
     } else if (cmd == "d" || cmd == "demangle") {
       auto str            = lexWord(StringRef(cmd.end(), ref.end() - cmd.end()));
-      auto demangled_name = NodeFinder::demangle(str);
+      auto demangled_name = NodeFinder::demangle(std::string{str});
       llvm::outs() << "Demangled name: " << demangled_name << "\n";
 
       continue;

@@ -5,43 +5,80 @@ on:
     branches: [ master, devel ]
   pull_request:
 
+env:
+  CXX: clang++
+  CC: clang
+
 jobs:
-  formatting-check:
-    runs-on: ubuntu-20.04
-    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+  format-check:
+    runs-on: ubuntu-22.04
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Check code format
-        uses: jidicula/clang-format-action@v3.2.0
-        with:
-          clang-format-version: '10'
+      - name: Format source code
+        run: |
+          find demo lib test \
+            -type f \
+            -a \( -name "*.c" -o -name "*.cpp" -o -name "*.h" \) \
+            -print0 \
+            | xargs -0 clang-format-14 -i
 
-  build-and-run-test:
-    runs-on: ubuntu-20.04
-    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+      - name: Format check
+        run: |
+          git status --porcelain --untracked-files=no
+          git status --porcelain --untracked-files=no | xargs -o -I {} test -z \"{}\"
+
+  codespell:
+    runs-on: ubuntu-22.04
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: codespell-project/actions-codespell@v2
 
-      - name: Install Clang and libs
-        run: sudo apt-get install clang-tools-10 clang-tidy-10 libclang-10-dev libclang-cpp10-dev libedit-dev
+  build-project:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - llvm-version: 12
+            os: ubuntu-20.04
+            preset: develop
+          - llvm-version: 14
+            os: ubuntu-22.04
+            preset: develop
+          - llvm-version: 18
+            os: ubuntu-24.04
+            preset: develop
+
+    runs-on: ${{ matrix.os }}
+ 
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update apt
+        run: sudo apt-get update
+
+      - name: Install LLVM
+        run: sudo apt-get install libllvm${{ matrix.llvm-version }} llvm-${{ matrix.llvm-version }} llvm-${{ matrix.llvm-version }}-dev
+
+      - name: Install Clang
+        run: sudo apt-get install clang-${{ matrix.llvm-version }} clang-tidy-${{ matrix.llvm-version }} clang-tools-${{ matrix.llvm-version }} libclang-${{ matrix.llvm-version }}-dev libclang-cpp${{ matrix.llvm-version }}-dev libedit-dev
 
       - name: Setup env
         run: |
-          sudo ln -f -s /usr/bin/clang-10 /usr/bin/clang
-          sudo ln -f -s /usr/bin/clang++-10 /usr/bin/clang++
-          sudo ln -f -s /usr/bin/FileCheck-10 /usr/bin/FileCheck
-          sudo ln -f -s /usr/bin/clang-tidy-10 /usr/bin/clang-tidy
-          echo "CC=clang-10" >> $GITHUB_ENV
-          echo "CXX=clang++-10" >> $GITHUB_ENV
-          echo "EXTERNAL_LIT=/usr/lib/llvm-10/build/utils/lit/lit.py" >> $GITHUB_ENV
+          sudo ln -f -s /usr/bin/clang-${{ matrix.llvm-version }} /usr/bin/clang
+          sudo ln -f -s /usr/bin/clang++-${{ matrix.llvm-version }} /usr/bin/clang++
+          echo "LLVM_CMAKE_DIR=/usr/lib/llvm-${{ matrix.llvm-version }}/cmake" >> $GITHUB_ENV
+          echo "CLANG_CMAKE_DIR=/usr/lib/llvm-${{ matrix.llvm-version }}/lib/cmake/clang" >> $GITHUB_ENV
+          echo "EXTERNAL_LIT=/usr/lib/llvm-${{ matrix.llvm-version }}/build/utils/lit/lit.py" >> $GITHUB_ENV
 
       - name: Build ASTPrinter
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=${LLVM_CMAKE_DIR} -DClang_DIR=${CLANG_CMAKE_DIR}
           cmake --build build --parallel
 
       - name: Build ASTPrinter release
         run: |
-          cmake -B build_rel -DCMAKE_BUILD_TYPE=Release
+          cmake -B build_rel -DCMAKE_BUILD_TYPE=Release -DLLVM_DIR=${LLVM_CMAKE_DIR} -DClang_DIR=${CLANG_CMAKE_DIR}
           cmake --build build_rel --parallel --target install

@@ -25,6 +25,8 @@ endfunction()
 function(target_project_compile_definitions target)
   cmake_parse_arguments(ARG "" "" "PRIVATE_DEFS;PUBLIC_DEFS" ${ARGN})
 
+  target_compile_definitions(${target} PRIVATE "LLVM_VERSION_MAJOR=${LLVM_VERSION_MAJOR}")
+
   if (ARG_PRIVATE_DEFS)
     target_compile_definitions(${target} PRIVATE
       "${ARG_PRIVATE_DEFS}"

@@ -25,7 +25,11 @@ inline void print(ASTContext& ctx, const Stmt* node, llvm::raw_ostream& os, bool
   if (with_source) {
     os << node2str(ctx, node) << "\n";
   }
+#if LLVM_VERSION_MAJOR < 12
   node->dump(os, sm);
+#else
+  node->dump(os, ctx);
+#endif
   const auto loc = locOf(sm, node);
   os << printToString(sm, loc);
   os << "\n";
