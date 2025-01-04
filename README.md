@@ -1,30 +1,28 @@
-# astprinter
-
-*astprinter* is a small commandline-based tool developed to explore the Clang abstract syntax tree (AST).
-The main goal is to make it easier to get specific AST nodes by specifying line numbers of the C/C++ source code.
-In conjunction with tools like `clang-query`, AST matchers can be written and tested more quickly.
+# astprinter &middot; ![License](https://img.shields.io/github/license/ahueck/astprinter)
 
 
-## Main features
-Explore the AST nodes of a translation unit
-- Use the line(s) of the C/C++ source code to get the corresponding AST nodes
-- Match function names (with regex) to print the AST nodes of the declaration/definition
+**astprinter** is a command-line tool for exploring the Clang abstract syntax tree (AST). It is designed to simplify retrieving specific AST nodes by specifying line numbers from C/C++ source code.
+
+
+## Features
+* Retrieve AST nodes corresponding to specific lines of C/C++ source code.
+* Use regular expressions to match function names and display the AST nodes for their declarations or definitions.
 
 ## Usage
-See [main.cpp](src/main.cpp) for all possible commandline arguments.
+See [main.cpp](src/main.cpp) for all possible command-line arguments.
 
 ### Example of using *astprinter*
 Assume *test.c* contains the code:
 
   ```c
-  int foo () {
-      return 2; 
-  }
-  int main() {
-      int val;
-      val = foo();    
-      return 0;
-  }
+  1  int foo () {
+  2      return 2; 
+  3  }
+  4  int main() {
+  5      int val;
+  6      val = foo();    
+  7      return 0;
+  8  }
   ```
 #### Using astprinter on test.c
 In this example we
@@ -56,14 +54,14 @@ ReturnStmt 0x1ba3220 <test.c:2:7, col:14>
 
 ###### Requirements
 
-- cmake >= 3.14
-- Clang/LLVM 10 (cmake needs to find the installation, see
-  the [LLVM cmake documentation](https://llvm.org/docs/CMake.html#id14))
-- C++ compiler with support for the C++17 standard, e.g., Clang-10
+- CMake >= 3.20
+- Clang/LLVM 12, 14, 18 (CMake needs to find the installation, see
+  the [LLVM CMake documentation](https://llvm.org/docs/CMake.html) or the [CI workflow](.github/workflows/basic-ci.yml))
+- C++17 compiler
 
 ###### Build steps
 
-In the root project folder, execute the following commands (see also [CI build file](.github/workflows/basic-ci.yml))
+In the root project folder, execute the following commands (see also [CI workflow](.github/workflows/basic-ci.yml))
 
   ```
   cmake -B build -DCMAKE_INSTALL_PREFIX=*your path*
