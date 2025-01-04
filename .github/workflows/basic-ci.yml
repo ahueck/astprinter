@@ -5,18 +5,38 @@ on:
     branches: [ master, devel ]
   pull_request:
 
+env:
+  CXX: clang++
+  CC: clang
+
 jobs:
-  formatting-check:
+  format-check:
     runs-on: ubuntu-22.04
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check code format
-        uses: jidicula/clang-format-action@v3.2.0
-        with:
-          clang-format-version: '14'
+      - name: Format source code
+        run: |
+          find demo lib test \
+            -type f \
+            -a \( -name "*.c" -o -name "*.cpp" -o -name "*.h" \) \
+            -print0 \
+            | xargs -0 clang-format-14 -i
 
-  build-and-run-test:
+      - name: Format check
+        run: |
+          git status --porcelain --untracked-files=no
+          git status --porcelain --untracked-files=no | xargs -o -I {} test -z \"{}\"
+
+  codespell:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: codespell-project/actions-codespell@v2
+
+  build-project:
     strategy:
       fail-fast: false
       matrix:
