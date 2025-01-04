@@ -47,9 +47,6 @@ jobs:
           - llvm-version: 14
             os: ubuntu-22.04
             preset: develop
-          - llvm-version: 15
-            os: ubuntu-22.04
-            preset: develop
           - llvm-version: 18
             os: ubuntu-24.04
             preset: develop
@@ -73,14 +70,15 @@ jobs:
           sudo ln -f -s /usr/bin/clang-${{ matrix.llvm-version }} /usr/bin/clang
           sudo ln -f -s /usr/bin/clang++-${{ matrix.llvm-version }} /usr/bin/clang++
           echo "LLVM_CMAKE_DIR=/usr/lib/llvm-${{ matrix.llvm-version }}/cmake" >> $GITHUB_ENV
+          echo "CLANG_CMAKE_DIR=/usr/lib/llvm-${{ matrix.llvm-version }}/lib/cmake/clang" >> $GITHUB_ENV
           echo "EXTERNAL_LIT=/usr/lib/llvm-${{ matrix.llvm-version }}/build/utils/lit/lit.py" >> $GITHUB_ENV
 
       - name: Build ASTPrinter
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=${LLVM_CMAKE_DIR} -DLLVM_EXTERNAL_LIT=${EXTERNAL_LIT}
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=${LLVM_CMAKE_DIR} -DClang_DIR=${CLANG_CMAKE_DIR}
           cmake --build build --parallel
 
       - name: Build ASTPrinter release
         run: |
-          cmake -B build_rel -DCMAKE_BUILD_TYPE=Release -DLLVM_DIR=${LLVM_CMAKE_DIR}
+          cmake -B build_rel -DCMAKE_BUILD_TYPE=Release -DLLVM_DIR=${LLVM_CMAKE_DIR} -DClang_DIR=${CLANG_CMAKE_DIR}
           cmake --build build_rel --parallel --target install

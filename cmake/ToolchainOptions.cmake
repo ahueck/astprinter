@@ -1,3 +1,5 @@
+include(FeatureSummary)
+
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 find_package(LLVM CONFIG HINTS "${LLVM_DIR}")
@@ -17,7 +19,7 @@ message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 
-find_package(Clang REQUIRED)
+find_package(Clang REQUIRED HINTS "${Clang_DIR}")
 
 include(AddLLVM)
 include(clang-tidy)
