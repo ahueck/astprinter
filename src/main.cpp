@@ -14,10 +14,10 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <optional>
 
 using namespace astprinter;
 using namespace llvm;
@@ -55,18 +55,17 @@ StringRef lexWord(StringRef word) {
 }  // namespace
 
 int main(int argc, const char** argv) {
-  #if LLVM_VERSION_MAJOR < 14
+#if LLVM_VERSION_MAJOR < 14
   CommonOptionsParser op(argc, argv, ASTPrinter);
   ClangTool tool(op.getCompilations(), op.getSourcePathList());
-  #else
+#else
   auto op = CommonOptionsParser::create(argc, argv, ASTPrinter);
-  if(!op){
+  if (!op) {
     llvm::outs() << "Erroneous input";
     return 1;
   }
   ClangTool tool(op->getCompilations(), op->getSourcePathList());
-  #endif
-  
+#endif
 
   std::vector<std::unique_ptr<clang::ASTUnit>> av;
   tool.buildASTs(av);
