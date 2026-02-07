@@ -1,4 +1,4 @@
-function(add_tidy_target target comment)
+function(astprinter_add_tidy_target target comment)
   macro(filter_dir _name_)
     foreach (SOURCE_FILE ${ARG_SOURCES})
       string(FIND ${SOURCE_FILE} ${_name_} EXCLUDE_FOUND)
@@ -33,23 +33,23 @@ function(add_tidy_target target comment)
   endif()
 endfunction()
 
-function(add_tidy_fix_target target comment)
+function(astprinter_add_tidy_fix_target target comment)
   cmake_parse_arguments(ARG "" "" "SOURCES;EXCLUDES;OTHER" ${ARGN})
-  add_tidy_target(${target} "${comment}"
+  astprinter_add_tidy_target(${target} "${comment}"
     SOURCES ${ARG_SOURCES}
     EXCLUDES ${ARG_EXCLUDES}
     OTHER ${ARG_OTHER} -fix
   )
 endfunction()
 
-function(make_tidy_check name sources)
-  add_tidy_target(tidy-run-on-${name}
+function(astprinter_make_tidy_check name sources)
+  astprinter_add_tidy_target(tidy-run-on-${name}
     "Clang-tidy run on ${name} translation units"
     SOURCES ${sources}
     OTHER --header-filter=${CMAKE_CURRENT_SOURCE_DIR}
   )
 
-  add_tidy_fix_target(tidy-fix-on-${name}
+  astprinter_add_tidy_fix_target(tidy-fix-on-${name}
     "Clang-tidy run with fixes on ${name} translation units"
     SOURCES ${sources}
     OTHER --header-filter=${CMAKE_CURRENT_SOURCE_DIR} -checks=-*,modernize-*,llvm-namespace-comment,google-explicit-constructor

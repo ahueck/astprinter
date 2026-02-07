@@ -80,6 +80,7 @@ int main(int argc, const char** argv) {
 
   NodeFinder visitor(ctx, llvm::outs());
   visitor.showColor(color);
+  visitor.showSource(source);
 
   llvm::LineEditor le("ast-printer");
   while (auto line = le.readLine()) {
