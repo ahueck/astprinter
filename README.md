@@ -35,20 +35,20 @@ In this example we
 ```console
 ahueck@sys:~/astprint/install$ ./bin/clang-ast-printer ../test.c --
 ast-printer> l
-foo:/path/to/test.c:1:3->3:4
-main:/path/to/test.c:4:3->8:4
+foo:/path/to/test.c:1:1->3:2
+main:/path/to/test.c:4:1->8:2
 
 ast-printer> p foo
-FunctionDecl 0x3977120 <test.c:1:3, line:3:3> line:1:7 used foo 'int ()'
-`-CompoundStmt 0x3977238 <col:14, line:3:3>
-  `-ReturnStmt 0x3977220 <line:2:7, col:14>
-    `-IntegerLiteral 0x3977200 <col:14> 'int' 2
-/path/to/test.c:1:3->3:4
+FunctionDecl 0x62eed65573d8 </path/to/test.c:1:1, line:3:1> line:1:5 used foo 'int ()'
+`-CompoundStmt 0x62eed65574f8 <col:12, line:3:1>
+  `-ReturnStmt 0x62eed65574e8 <line:2:5, col:12>
+    `-IntegerLiteral 0x62eed65574c8 <col:12> 'int' 2
+/path/to/test.c:1:1->3:2
 
 ast-printer> 2
-ReturnStmt 0x1ba3220 <test.c:2:7, col:14>
-`-IntegerLiteral 0x1ba3200 <col:14> 'int' 2
-/path/to/test.c:2:7->2:15
+ReturnStmt 0x62eed65574e8 </path/to/test.c:2:5, col:12>
+`-IntegerLiteral 0x62eed65574c8 <col:12> 'int' 2
+/path/to/test.c:2:5->2:13
 
 ast-printer> source
 Show source on.
@@ -57,10 +57,10 @@ int foo() {
     return 2;
 }
 
-FunctionDecl 0x626544f903d8 <test.c:1:1, line:3:1> line:1:5 used foo 'int ()'
-`-CompoundStmt 0x626544f904f8 <col:12, line:3:1>
-  `-ReturnStmt 0x626544f904e8 <line:2:5, col:12>
-    `-IntegerLiteral 0x626544f904c8 <col:12> 'int' 2
+FunctionDecl 0x62eed65573d8 </path/to/test.c:1:1, line:3:1> line:1:5 used foo 'int ()'
+`-CompoundStmt 0x62eed65574f8 <col:12, line:3:1>
+  `-ReturnStmt 0x62eed65574e8 <line:2:5, col:12>
+    `-IntegerLiteral 0x62eed65574c8 <col:12> 'int' 2
 /path/to/test.c:1:1->3:2
 ```
 
