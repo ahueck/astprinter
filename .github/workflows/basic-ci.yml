@@ -11,18 +11,30 @@ env:
 
 jobs:
   format-check:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-18 main" | sudo tee /etc/apt/sources.list.d/llvm-18.list
+
+      - name: Update apt
+        run: sudo apt-get update
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get remove clang-format-*
+          sudo apt-get install -t llvm-toolchain-noble-18 clang-format-18
 
       - name: Format source code
         run: |
-          find demo lib test \
+          find src include test \
             -type f \
             -a \( -name "*.c" -o -name "*.cpp" -o -name "*.h" \) \
             -print0 \
-            | xargs -0 clang-format-14 -i
+            | xargs -0 clang-format-18 -i
 
       - name: Format check
         run: |
@@ -33,28 +45,31 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: codespell-project/actions-codespell@v2
+      - uses: actions/checkout@v5
+      - uses: codespell-project/actions-codespell@v2.2
 
   build-project:
     strategy:
       fail-fast: false
       matrix:
         include:
-          - llvm-version: 12
-            os: ubuntu-20.04
-            preset: develop
           - llvm-version: 14
             os: ubuntu-22.04
             preset: develop
-          - llvm-version: 18
+          - llvm-version: 21
             os: ubuntu-24.04
             preset: develop
 
     runs-on: ${{ matrix.os }}
  
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: LLVM apt
+        if: ${{ matrix.llvm-version >= 19 }}
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-${{ matrix.llvm-version }} main" | sudo tee /etc/apt/sources.list.d/llvm-${{ matrix.llvm-version }}.list
 
       - name: Update apt
         run: sudo apt-get update
@@ -73,12 +88,18 @@ jobs:
           echo "CLANG_CMAKE_DIR=/usr/lib/llvm-${{ matrix.llvm-version }}/lib/cmake/clang" >> $GITHUB_ENV
           echo "EXTERNAL_LIT=/usr/lib/llvm-${{ matrix.llvm-version }}/build/utils/lit/lit.py" >> $GITHUB_ENV
 
-      - name: Build ASTPrinter
-        run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=${LLVM_CMAKE_DIR} -DClang_DIR=${CLANG_CMAKE_DIR}
-          cmake --build build --parallel
-
       - name: Build ASTPrinter release
         run: |
-          cmake -B build_rel -DCMAKE_BUILD_TYPE=Release -DLLVM_DIR=${LLVM_CMAKE_DIR} -DClang_DIR=${CLANG_CMAKE_DIR}
+          cmake --preset release -DLLVM_DIR=${LLVM_CMAKE_DIR} -DClang_DIR=${CLANG_CMAKE_DIR} -DLLVM_EXTERNAL_LIT=${EXTERNAL_LIT}
           cmake --build build_rel --parallel --target install
+
+      - name: Test and Coverage
+        run: |
+          cmake --preset coverage -DLLVM_DIR=${LLVM_CMAKE_DIR} -DClang_DIR=${CLANG_CMAKE_DIR} -DLLVM_EXTERNAL_LIT=${EXTERNAL_LIT}
+          cmake --build build_cov --target coverage-astprinter
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report-llvm${{ matrix.llvm-version }}
+          path: build_cov/coverage_report/
