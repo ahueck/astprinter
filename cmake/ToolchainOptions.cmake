@@ -29,6 +29,9 @@ include(target-util)
 
 set(LOG_LEVEL 0 CACHE STRING "Granularity of the logger. 3 is most verbose, 0 is least.")
 
+option(ASTPRINTER_ENABLE_COVERAGE "Enable code coverage" OFF)
+mark_as_advanced(ASTPRINTER_ENABLE_COVERAGE)
+
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
   message(STATUS "Building as debug (default)")
