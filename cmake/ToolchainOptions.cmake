@@ -27,7 +27,7 @@ include(clang-format)
 include(log-util)
 include(target-util)
 
-set(LOG_LEVEL 0 CACHE STRING "Granularity of the logger. 3 is most verbose, 0 is least.")
+set(ASTPRINTER_LOG_LEVEL 0 CACHE STRING "Granularity of the logger. 3 is most verbose, 0 is least.")
 
 option(ASTPRINTER_ENABLE_COVERAGE "Enable code coverage" OFF)
 mark_as_advanced(ASTPRINTER_ENABLE_COVERAGE)
