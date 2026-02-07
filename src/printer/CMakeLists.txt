@@ -2,9 +2,9 @@ add_library(clang-ast-print STATIC
   NodeFinder.cpp
   )
 
-target_define_file_basename(clang-ast-print)
-target_project_compile_options(clang-ast-print)
-target_project_compile_definitions(clang-ast-print
+astprinter_define_file_basename(clang-ast-print)
+astprinter_project_compile_options(clang-ast-print)
+astprinter_project_compile_definitions(clang-ast-print
   PRIVATE_DEFS
   LOG_LEVEL=${LOG_LEVEL}
   )

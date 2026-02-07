@@ -4,9 +4,9 @@ add_executable(clang-ast-printer${EXE_SUFFIX}
   main.cpp
   )
 
-target_define_file_basename(clang-ast-printer${EXE_SUFFIX})
-target_project_compile_options(clang-ast-printer${EXE_SUFFIX})
-target_project_compile_definitions(clang-ast-printer${EXE_SUFFIX}
+astprinter_define_file_basename(clang-ast-printer${EXE_SUFFIX})
+astprinter_project_compile_options(clang-ast-printer${EXE_SUFFIX})
+astprinter_project_compile_definitions(clang-ast-printer${EXE_SUFFIX}
   PRIVATE_DEFS
   LOG_LEVEL=${LOG_LEVEL}
   )

@@ -1,0 +1,73 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "clang-toolchain",
+      "hidden": true,
+      "generator": "Unix Makefiles",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "develop",
+      "displayName": "Develop (Debug)",
+      "description": "Default develop build options for Clang",
+      "binaryDir": "${sourceDir}/build",
+      "inherits": [
+        "clang-toolchain"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "description": "Default release build options for Clang",
+      "binaryDir": "${sourceDir}/build_rel",
+      "inherits": [
+        "clang-toolchain"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "coverage",
+      "displayName": "Coverage (LLVM)",
+      "description": "Default coverage build options for Clang (LLVM-based)",
+      "binaryDir": "${sourceDir}/build_cov",
+      "inherits": [
+        "clang-toolchain"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ASTPRINTER_ENABLE_COVERAGE": "ON",
+        "CMAKE_C_FLAGS": "-fprofile-instr-generate -fcoverage-mapping",
+        "CMAKE_CXX_FLAGS": "-fprofile-instr-generate -fcoverage-mapping",
+        "CMAKE_EXE_LINKER_FLAGS": "-fprofile-instr-generate -fcoverage-mapping"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "develop",
+      "configurePreset": "develop"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage"
+    }
+  ]
+}

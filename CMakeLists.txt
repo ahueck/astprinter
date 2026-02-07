@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.20)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.21)
 PROJECT(astprinter
   VERSION 0.3
 )
@@ -17,7 +17,7 @@ list(APPEND CMAKE_MODULE_PATH
 include(ToolchainOptions)
 include(CMakePackageConfigHelpers)
 
-add_format_target(format-sources
+astprinter_add_format_target(format-sources
   "Formats project source files"
   TARGETS src/*.cpp
           src/*.h
@@ -25,3 +25,7 @@ add_format_target(format-sources
 )
 
 add_subdirectory(src)
+
+if(PROJECT_IS_TOP_LEVEL)
+  add_subdirectory(test)
+endif()

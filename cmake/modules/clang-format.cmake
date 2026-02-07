@@ -1,4 +1,4 @@
-function(add_format_target target comment)
+function(astprinter_add_format_target target comment)
   macro(filter_dir _dir_name_)
     foreach (SOURCE_FILE ${ALL_CXX_FILES})
       string(FIND ${SOURCE_FILE} ${_dir_name_} EXCLUDE_FOUND)

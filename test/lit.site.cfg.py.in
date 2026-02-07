@@ -1,0 +1,13 @@
+import os
+
+config.llvm_ast_printer_binary = "@LLVM_AST_PRINTER_BINARY@"
+config.filecheck_binary = "@ASTPRINTER_FILECHECK_EXEC@"
+config.llvm_profdata_exe = "@ASTPRINTER_PROFDATA_EXEC@"
+config.llvm_cov_exe = "@ASTPRINTER_COV_EXEC@"
+config.enable_coverage = "@ASTPRINTER_ENABLE_COVERAGE@"
+config.test_source_root = "@CMAKE_CURRENT_SOURCE_DIR@"
+config.test_exec_root = "@CMAKE_CURRENT_BINARY_DIR@"
+config.llvm_version = "@LLVM_VERSION_MAJOR@"
+
+# Let the main config do the real work.
+lit_config.load_config(config, os.path.join(config.test_source_root, "lit.cfg.py"))
