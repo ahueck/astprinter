@@ -18,6 +18,13 @@ add_custom_target(check-astprinter
   USES_TERMINAL
 )
 
+astprinter_add_format_target(astprinter-format-tests
+  "Formats project source files"
+  TARGETS codes/*.cpp
+          codes/*.c
+          codes/*.h
+)
+
 if(ASTPRINTER_ENABLE_COVERAGE)
   set(COVERAGE_DIR ${CMAKE_BINARY_DIR}/coverage_report)
   astprinter_find_llvm_progs(ASTPRINTER_PROFDATA_EXEC "llvm-profdata-${LLVM_VERSION_MAJOR};llvm-profdata")

@@ -3,7 +3,8 @@
 // CHECK: foo:{{.*}}
 // CHECK: main:{{.*}}
 
-void foo() {}
+void foo() {
+}
 int main() {
   return 0;
 }

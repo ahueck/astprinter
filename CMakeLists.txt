@@ -17,7 +17,7 @@ list(APPEND CMAKE_MODULE_PATH
 include(ToolchainOptions)
 include(CMakePackageConfigHelpers)
 
-astprinter_add_format_target(format-sources
+astprinter_add_format_target(astprinter-format-sources
   "Formats project source files"
   TARGETS src/*.cpp
           src/*.h
